@@ -1417,15 +1417,15 @@
       const notes = [];
       for (let i = 0; i < quantized.length; i += 1) {
         const n = quantized[i];
-        const strong = n.v > maxV * 0.55 && i % 7 === 0;
-        const makeHold = strong && Math.random() < 0.35;
+        const strong = n.v > maxV * 0.5 && i % 6 === 0;
+        const makeHold = strong && Math.random() < 0.5;
         if (makeHold) {
           lane = (lane + 1) % laneCount;
           const durBeats = Math.random() < 0.5 ? 1 : 2;
           notes.push({ t: n.t, end: n.t + beat * durBeats, lane, type: "hold" });
           continue;
         }
-        if (strong && Math.random() < 0.4) {
+        if (strong && Math.random() < 0.6) {
           lane = (lane + 1) % laneCount;
           const other = (lane + Math.floor(laneCount / 2)) % laneCount;
           notes.push({ t: n.t, lane, type: "tap" });
@@ -1664,10 +1664,10 @@
       g.fillRect(0, judgeY - 2, width, 4);
 
       for (const note of chart) {
-        if (note.hit) continue;
+        if (note.hit && note.type !== "hold") continue;
         const dt = (note.t + offsetSec) - currentTime;
         if (dt < -0.4 || dt > SCROLL_TIME) continue;
-        const y = judgeY - (dt / SCROLL_TIME) * (height - 40);
+        let y = judgeY - (dt / SCROLL_TIME) * (height - 40);
         const x = note.lane * laneWidth + 12;
         const w = laneWidth - 24;
         const h = 16;
@@ -1678,6 +1678,9 @@
           const height = Math.abs(y - yEnd);
           g.fillStyle = "rgba(140, 156, 174, 0.35)";
           g.fillRect(x + w * 0.25, top, w * 0.5, height);
+          if (note.hit && !note.done) {
+            y = judgeY;
+          }
         }
         g.fillStyle = laneColor(note.lane);
         g.fillRect(x, y - h / 2, w, h);
