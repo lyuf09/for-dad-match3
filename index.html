@@ -400,6 +400,17 @@
         <button id="sampleBtn" class="secondary" data-i18n="btn_sample">示例歌曲：HaM - Haze_zzZ</button>
       </div>
 
+      <div class="group">
+        <div class="row">
+          <span class="muted" data-i18n="hint_files">可从“文件”或网盘选择音频</span>
+        </div>
+      </div>
+
+      <div class="group">
+        <button id="recordBtn" class="secondary" data-i18n="btn_record">录音模式：开始</button>
+        <button id="stopRecordBtn" class="secondary" disabled data-i18n="btn_record_stop">停止录音</button>
+      </div>
+
         <div class="group">
           <div class="row">
             <label class="muted" for="density" data-i18n="label_density">谱面密度</label>
@@ -510,6 +521,7 @@
         <button id="analyzeBtn" disabled data-i18n="btn_analyze">分析并生成谱面</button>
         <button id="regenBtn" class="secondary" disabled data-i18n="btn_regen">按当前密度重新生成</button>
         <button id="playBtn" disabled data-i18n="btn_play">开始游戏</button>
+        <button id="pauseBtn" class="secondary" disabled data-i18n="btn_pause">暂停</button>
       </div>
 
       <div id="status" data-i18n="status_idle">等待上传歌曲…</div>
@@ -540,7 +552,10 @@
       analyze: document.getElementById("analyzeBtn"),
       regen: document.getElementById("regenBtn"),
       play: document.getElementById("playBtn"),
+      pause: document.getElementById("pauseBtn"),
       sample: document.getElementById("sampleBtn"),
+      record: document.getElementById("recordBtn"),
+      stopRecord: document.getElementById("stopRecordBtn"),
       density: document.getElementById("density"),
       densityText: document.getElementById("densityText"),
       offset: document.getElementById("offset"),
@@ -612,6 +627,10 @@
     let score = 0;
     let combo = 0;
     let nextMissIndex = 0;
+    let paused = false;
+    let pauseOffset = 0;
+    let recorder = null;
+    let recordChunks = [];
 
     const gameState = {
       width: ui.canvas.width,
@@ -644,9 +663,16 @@
         label_lane: "按键数量",
         label_lock: "节拍锁定强度",
         label_sfx: "音效音量",
+        hint_files: "可从“文件”或网盘选择音频",
         btn_analyze: "分析并生成谱面",
         btn_regen: "按当前密度重新生成",
         btn_play: "开始游戏",
+        btn_pause: "暂停",
+        btn_resume: "继续",
+        btn_record: "录音模式：开始",
+        btn_record_stop: "停止录音",
+        status_recording: "正在录音…",
+        status_record_done: "录音完成，点击“分析并生成谱面”。",
         btn_sample: "示例歌曲：HaM - Haze_zzZ",
         mobile_open: "控制面板",
         mobile_close: "关闭面板",
@@ -703,9 +729,16 @@
         label_lane: "Key Count",
         label_lock: "Beat Lock",
         label_sfx: "SFX Volume",
+        hint_files: "Choose audio from Files or cloud drives",
         btn_analyze: "Analyze & Generate",
         btn_regen: "Regenerate",
         btn_play: "Start",
+        btn_pause: "Pause",
+        btn_resume: "Resume",
+        btn_record: "Record: Start",
+        btn_record_stop: "Stop Recording",
+        status_recording: "Recording…",
+        status_record_done: "Recording ready. Click Analyze.",
         btn_sample: "Sample: HaM - Haze_zzZ",
         mobile_open: "Controls",
         mobile_close: "Hide Controls",
@@ -786,6 +819,7 @@
       ui.timeSigText.textContent = timeSig === "auto" ? t("time_auto") : timeSig;
       ui.difficultyText.textContent = diffLabels[difficulty] || t("difficulty_normal");
       ui.laneText.textContent = t("lane_keys", laneCount);
+      ui.pause.textContent = paused ? t("btn_resume") : t("btn_pause");
     }
 
     function buildKeyMap() {
@@ -1034,6 +1068,7 @@
     function stopGame() {
       running = false;
       cancelAnimationFrame(rafId);
+      paused = false;
       if (sourceNode) {
         sourceNode.onended = null;
         sourceNode.stop(0);
@@ -1725,6 +1760,43 @@
       }
     }
 
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recordChunks = [];
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) recordChunks.push(e.data);
+        };
+        recorder.onstop = async () => {
+          const blob = new Blob(recordChunks, { type: recorder.mimeType });
+          const buf = await blob.arrayBuffer();
+          audioBuffer = await ensureAudioContext().decodeAudioData(buf.slice(0));
+          fileName = "Mic Recording";
+          ui.analyze.disabled = false;
+          ui.bpm.textContent = "-";
+          ui.notes.textContent = "-";
+          ui.keyStat.textContent = "-";
+          setStatus(t("status_record_done"));
+          ui.record.disabled = false;
+          ui.stopRecord.disabled = true;
+          stream.getTracks().forEach((t) => t.stop());
+        };
+        recorder.start();
+        ui.record.disabled = true;
+        ui.stopRecord.disabled = false;
+        setStatus(t("status_recording"));
+      } catch (err) {
+        setStatus(`Recording failed: ${err.message || err}`, true);
+      }
+    }
+
+    function stopRecording() {
+      if (recorder && recorder.state !== "inactive") {
+        recorder.stop();
+      }
+    }
+
     async function doAnalyze() {
       if (!audioBuffer) return;
       stopGame();
@@ -1793,6 +1865,7 @@
       ui.bpm.textContent = String(estimatedBpm);
       ui.notes.textContent = String(chart.length);
       ui.play.disabled = chart.length === 0;
+      ui.pause.disabled = chart.length === 0;
       ui.regen.disabled = chart.length === 0;
       setStatus(
         chart.length ? t("status_ready", fileName) : t("status_none"),
@@ -1831,6 +1904,7 @@
       for (const n of chart) n.hit = false;
       ui.notes.textContent = String(chart.length);
       ui.play.disabled = chart.length === 0;
+      ui.pause.disabled = chart.length === 0;
       setStatus(t("status_regen", Number(ui.density.value).toFixed(2)), chart.length === 0);
       render(0);
     }
@@ -1857,9 +1931,50 @@
       startTime = audioCtx.currentTime + 0.08;
       sourceNode.start(startTime);
       running = true;
+      paused = false;
+      pauseOffset = 0;
       nextMissIndex = 0;
       setStatus(t("status_playing"));
       loop();
+    }
+
+    async function togglePause() {
+      if (!audioBuffer || !chart.length) return;
+      const audioCtx = ensureAudioContext();
+      if (audioCtx.state === "suspended") await audioCtx.resume();
+      if (!paused && running) {
+        pauseOffset = audioCtx.currentTime - startTime;
+        running = false;
+        paused = true;
+        cancelAnimationFrame(rafId);
+        if (sourceNode) {
+          sourceNode.stop(0);
+          sourceNode.disconnect();
+          sourceNode = null;
+        }
+        ui.pause.textContent = t("btn_resume");
+        return;
+      }
+      if (paused) {
+        sourceNode = audioCtx.createBufferSource();
+        sourceNode.buffer = audioBuffer;
+        sourceNode.connect(audioCtx.destination);
+        sourceNode.onended = () => {
+          running = false;
+          paused = false;
+          cancelAnimationFrame(rafId);
+          setStatus(t("status_end", score));
+          render(audioBuffer.duration + 1);
+          ui.pause.textContent = t("btn_pause");
+        };
+        startTime = audioCtx.currentTime - pauseOffset;
+        sourceNode.start(0, pauseOffset);
+        running = true;
+        paused = false;
+        setStatus(t("status_playing"));
+        ui.pause.textContent = t("btn_pause");
+        loop();
+      }
     }
 
     ui.file.addEventListener("change", async (e) => {
@@ -1869,6 +1984,7 @@
       setStatus("正在解码音频…");
       ui.analyze.disabled = true;
       ui.play.disabled = true;
+      ui.pause.disabled = true;
       ui.regen.disabled = true;
       stopGame();
       resetScore();
@@ -1971,7 +2087,10 @@
     ui.analyze.addEventListener("click", doAnalyze);
     ui.regen.addEventListener("click", regenChart);
     ui.play.addEventListener("click", startGame);
+    ui.pause.addEventListener("click", togglePause);
     ui.sample.addEventListener("click", loadSample);
+    ui.record.addEventListener("click", startRecording);
+    ui.stopRecord.addEventListener("click", stopRecording);
 
     window.addEventListener("keydown", (e) => {
       const lane = keyMap[e.key.toLowerCase()];
