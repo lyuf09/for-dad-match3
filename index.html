@@ -1418,31 +1418,23 @@
       const notes = [];
       for (let i = 0; i < quantized.length; i += 1) {
         const n = quantized[i];
-        const strong = n.v > maxV * 0.5 && i % 6 === 0;
-        const makeHold = strong && Math.random() < 0.5;
+        const strong = n.v > maxV * 0.5 && i % 5 === 0;
+        const makeHold = strong && Math.random() < 0.28;
         if (makeHold) {
           lane = (lane + 1) % laneCount;
-          const durBeats = Math.random() < 0.5 ? 1 : 2;
-          notes.push({ t: n.t, end: n.t + beat * durBeats, lane, type: "hold" });
+          const durBeats = Math.random() < 0.6 ? 1 : 2;
+          notes.push({ t: n.t, end: n.t + beat * durBeats, lane, type: "hold", hit: false, done: false });
           continue;
         }
-        if (strong && Math.random() < 0.6) {
+        if (strong && Math.random() < 0.5) {
           lane = (lane + 1) % laneCount;
-          const other = (lane + Math.floor(laneCount / 2)) % laneCount;
+          const other = (lane + 2) % laneCount;
           notes.push({ t: n.t, lane, type: "tap" });
           notes.push({ t: n.t, lane: other, type: "tap" });
           continue;
         }
-        if (strong && laneCount >= 6) {
-          const left = lane % laneCount;
-          const right = (left + Math.floor(laneCount / 2)) % laneCount;
-          notes.push({ t: n.t, lane: left, type: "tap" });
-          notes.push({ t: n.t, lane: right, type: "tap" });
-          lane = (lane + 1) % laneCount;
-        } else {
-          lane = (lane + 1 + (i % 2)) % laneCount;
-          notes.push({ t: n.t, lane, type: "tap" });
-        }
+        lane = (lane + 1 + (i % 2)) % laneCount;
+        notes.push({ t: n.t, lane, type: "tap" });
       }
       return notes.sort((a, b) => a.t - b.t);
     }
@@ -1679,9 +1671,7 @@
           const height = Math.abs(y - yEnd);
           g.fillStyle = "rgba(140, 156, 174, 0.35)";
           g.fillRect(x + w * 0.25, top, w * 0.5, height);
-          if (note.hit && !note.done) {
-            y = judgeY;
-          }
+          if (note.hit && !note.done) y = judgeY;
         }
         g.fillStyle = laneColor(note.lane);
         g.fillRect(x, y - h / 2, w, h);
@@ -1714,7 +1704,6 @@
         }
         if (currentTime - (n.t + offsetSec) > hitWindow) {
           n.hit = true;
-          n.done = true;
           combo = 0;
           ui.combo.textContent = "0";
           nextMissIndex += 1;
@@ -1727,10 +1716,8 @@
         if (currentTime - (n.end + offsetSec) > hitWindow) {
           n.done = true;
           if (activeHolds[n.lane] === n) activeHolds[n.lane] = null;
-          combo += 1;
-          score += 220 + combo * 2;
-          ui.score.textContent = String(score);
-          ui.combo.textContent = String(combo);
+          combo = 0;
+          ui.combo.textContent = "0";
         }
       }
     }
@@ -1768,17 +1755,20 @@
       if (bestIndex >= 0 && bestDelta <= hitWindow) {
         const note = chart[bestIndex];
         note.hit = true;
-        combo += 1;
         const perfect = bestDelta <= perfectWindow;
         const gain = perfect ? 300 : 180;
         score += gain + combo * 2;
         ui.score.textContent = String(score);
-        ui.combo.textContent = String(combo);
         laneFlash[lane] = t;
         playHitSound(perfect ? "perfect" : "good");
         if (note.type === "hold") {
           note.done = false;
           activeHolds[lane] = note;
+          combo += 1;
+          ui.combo.textContent = String(combo);
+        } else {
+          combo += 1;
+          ui.combo.textContent = String(combo);
         }
         const laneWidth = gameState.width / laneCount;
         const baseX = lane * laneWidth + laneWidth / 2;
