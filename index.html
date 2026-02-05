@@ -2259,6 +2259,10 @@
       if (currentSource === "midi" && midiOnsets) {
         estimatedBpm = midiBpm || 120;
         baseOnsets = filterMidiOnsets(midiOnsets, midiMode);
+        if (estimatedBpm < 100) {
+          estimatedBpm *= 2;
+          baseOnsets = baseOnsets.map((o) => ({ ...o, t: o.t / 2 }));
+        }
         if (midiTimeSig && (["4/4", "3/4", "5/4", "7/8", "6/8", "9/8", "12/8"].includes(midiTimeSig))) {
           timeSig = midiTimeSig;
         }
