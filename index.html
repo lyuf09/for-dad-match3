@@ -1,0 +1,1679 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metalcore Piano Rhythm</title>
+  <style>
+    :root {
+      --bg: #0b0d11;
+      --panel: #13161b;
+      --line: #2f343b;
+      --accent: #4b5f7a;
+      --accent-2: #8ea0b2;
+      --text: #e3e7ec;
+      --muted: #9da6b0;
+      --danger: #e06c75;
+      --lane-1: #3f4c5c;
+      --lane-2: #465362;
+      --lane-3: #4c5969;
+      --lane-4: #536171;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, #1b2129 0%, transparent 42%),
+        radial-gradient(circle at 80% 80%, #11161d 0%, transparent 38%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(120deg, rgba(255, 255, 255, 0.03), transparent 30%),
+        linear-gradient(240deg, rgba(255, 255, 255, 0.025), transparent 28%);
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .app {
+      width: min(100%, 1120px);
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 18px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(20, 23, 29, 0.68), rgba(16, 18, 23, 0.66));
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(10px);
+    }
+
+    .left {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .controls-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.4px;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .group {
+      display: grid;
+      gap: 8px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    input[type="file"],
+    button,
+    input[type="range"],
+    select,
+    input[type="checkbox"] {
+      width: 100%;
+    }
+
+    input[type="file"] {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    select {
+      background: #11161d;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--accent);
+      justify-self: end;
+    }
+
+    button {
+      border: 0;
+      background: linear-gradient(180deg, #5a6a82, #465565);
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    button.secondary {
+      background: linear-gradient(180deg, #2f3742, #252b33);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    #status {
+      color: var(--muted);
+      font-size: 12px;
+      min-height: 32px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .stat {
+      background: rgba(16, 21, 27, 0.4);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    .stat strong {
+      display: block;
+      color: var(--text);
+      font-size: 16px;
+      margin-top: 2px;
+    }
+
+    .game-wrap {
+      display: grid;
+      gap: 10px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 620px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background:
+        linear-gradient(180deg, rgba(20, 24, 30, 0.36), rgba(12, 14, 18, 0.35) 72%);
+      display: block;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .keys {
+      display: grid;
+      gap: 8px;
+    }
+
+    .key {
+      text-align: center;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(17, 22, 29, 0.3);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .hit {
+      box-shadow: 0 0 0 2px var(--accent-2) inset;
+      color: var(--text);
+    }
+
+    .watermark {
+      position: fixed;
+      right: 24px;
+      bottom: 18px;
+      font-size: 12px;
+      letter-spacing: 0.8px;
+      color: rgba(157, 166, 176, 0.7);
+      pointer-events: none;
+      text-transform: uppercase;
+      z-index: 2;
+    }
+
+    .logo-bg {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      opacity: 1;
+      filter: blur(0.4px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .logo-bg img {
+      width: min(82vmin, 900px);
+      height: min(82vmin, 900px);
+      object-fit: contain;
+    }
+
+    .app,
+    .watermark {
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+      canvas {
+        height: 520px;
+      }
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-bg"><img src="assets/logo.png" alt="" /></div>
+  <div class="watermark">
+    <span>Made by Haze_zzZ</span>
+  </div>
+  <main class="app">
+    <section class="panel left">
+      <div>
+        <h1>前卫核钢琴节奏</h1>
+        <p>上传本地歌曲，自动检测节拍并生成下落音符。音符落到浅灰蓝判定线时按 D / F / J / K。</p>
+      </div>
+
+      <div class="controls-grid">
+        <div class="group">
+          <label class="muted" for="audioFile">歌曲文件（mp3/wav/m4a）</label>
+          <input id="audioFile" type="file" accept="audio/*" />
+        </div>
+
+        <div class="group">
+          <div class="row">
+            <label class="muted" for="density">谱面密度</label>
+            <span id="densityText" class="muted">1.00x</span>
+          </div>
+          <input id="density" type="range" min="0.6" max="1.8" value="1" step="0.05" />
+        </div>
+
+        <div class="group">
+          <div class="row">
+            <label class="muted" for="offset">音符偏移</label>
+            <span id="offsetText" class="muted">0 ms</span>
+          </div>
+          <input id="offset" type="range" min="-150" max="150" value="0" step="5" />
+        </div>
+
+        <div class="group">
+          <div class="row">
+            <label class="muted" for="focusMode">识别模式</label>
+            <span id="focusText" class="muted">自动切换</span>
+          </div>
+          <select id="focusMode">
+            <option value="auto">自动切换（每4小节）</option>
+            <option value="drum">鼓优先</option>
+            <option value="guitar">吉他优先</option>
+            <option value="piano">钢琴优先</option>
+            <option value="vocal">人声优先</option>
+            <option value="mix">混合</option>
+          </select>
+        </div>
+
+      <div class="group">
+        <div class="row">
+          <label class="muted" for="beatTrack">节拍追踪</label>
+          <span id="beatText" class="muted">开</span>
+        </div>
+        <input id="beatTrack" type="checkbox" checked />
+      </div>
+
+      <div class="group">
+        <div class="row">
+          <label class="muted" for="enhanceMode">增强识别</label>
+          <span id="enhanceText" class="muted">开</span>
+        </div>
+        <input id="enhanceMode" type="checkbox" checked />
+      </div>
+
+      <div class="group">
+        <div class="row">
+          <label class="muted" for="timeSig">拍号</label>
+          <span id="timeSigText" class="muted">自动</span>
+        </div>
+          <select id="timeSig">
+            <option value="auto">自动估计</option>
+            <option value="4/4">4/4</option>
+            <option value="3/4">3/4</option>
+            <option value="7/8">7/8</option>
+            <option value="6/8">6/8</option>
+            <option value="9/8">9/8</option>
+            <option value="5/4">5/4</option>
+            <option value="12/8">12/8</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <div class="row">
+            <label class="muted" for="difficulty">难度</label>
+            <span id="difficultyText" class="muted">普通</span>
+          </div>
+          <select id="difficulty">
+            <option value="easy">简单</option>
+            <option value="normal" selected>普通</option>
+            <option value="hard">困难</option>
+            <option value="expert">地狱</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <div class="row">
+            <label class="muted" for="laneCount">按键数量</label>
+            <span id="laneText" class="muted">4 键</span>
+          </div>
+          <select id="laneCount">
+            <option value="4" selected>4 键</option>
+            <option value="6">6 键</option>
+            <option value="8">8 键</option>
+          </select>
+        </div>
+
+      <div class="group">
+        <div class="row">
+          <label class="muted" for="beatLock">节拍锁定强度</label>
+          <span id="beatLockText" class="muted">65%</span>
+        </div>
+        <input id="beatLock" type="range" min="0" max="1" value="0.65" step="0.05" />
+      </div>
+
+      <div class="group">
+        <div class="row">
+          <label class="muted" for="sfxVolume">音效音量</label>
+          <span id="sfxText" class="muted">80%</span>
+        </div>
+        <input id="sfxVolume" type="range" min="0" max="1.4" value="0.8" step="0.05" />
+      </div>
+      </div>
+
+      <div class="group">
+        <button id="analyzeBtn" disabled>分析并生成谱面</button>
+        <button id="regenBtn" class="secondary" disabled>按当前密度重新生成</button>
+        <button id="playBtn" disabled>开始游戏</button>
+      </div>
+
+      <div id="status">等待上传歌曲…</div>
+
+      <div class="stats">
+        <div class="stat">估计 BPM<strong id="bpmStat">-</strong></div>
+        <div class="stat">音符数<strong id="noteStat">-</strong></div>
+        <div class="stat">调性<strong id="keyStat">-</strong></div>
+        <div class="stat">分数<strong id="scoreStat">0</strong></div>
+        <div class="stat">连击<strong id="comboStat">0</strong></div>
+      </div>
+    </section>
+
+    <section class="game-wrap">
+      <canvas id="game" width="620" height="620"></canvas>
+      <div class="keys">
+        <div id="key0" class="key">D</div>
+        <div id="key1" class="key">F</div>
+        <div id="key2" class="key">J</div>
+        <div id="key3" class="key">K</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const ui = {
+      file: document.getElementById("audioFile"),
+      analyze: document.getElementById("analyzeBtn"),
+      regen: document.getElementById("regenBtn"),
+      play: document.getElementById("playBtn"),
+      density: document.getElementById("density"),
+      densityText: document.getElementById("densityText"),
+      offset: document.getElementById("offset"),
+      offsetText: document.getElementById("offsetText"),
+      focusMode: document.getElementById("focusMode"),
+      focusText: document.getElementById("focusText"),
+      beatTrack: document.getElementById("beatTrack"),
+      beatText: document.getElementById("beatText"),
+      enhanceMode: document.getElementById("enhanceMode"),
+      enhanceText: document.getElementById("enhanceText"),
+      timeSig: document.getElementById("timeSig"),
+      timeSigText: document.getElementById("timeSigText"),
+      difficulty: document.getElementById("difficulty"),
+      difficultyText: document.getElementById("difficultyText"),
+      laneCount: document.getElementById("laneCount"),
+      laneText: document.getElementById("laneText"),
+      keyStat: document.getElementById("keyStat"),
+      beatLock: document.getElementById("beatLock"),
+      beatLockText: document.getElementById("beatLockText"),
+      sfxVolume: document.getElementById("sfxVolume"),
+      sfxText: document.getElementById("sfxText"),
+      status: document.getElementById("status"),
+      bpm: document.getElementById("bpmStat"),
+      notes: document.getElementById("noteStat"),
+      score: document.getElementById("scoreStat"),
+      combo: document.getElementById("comboStat"),
+      canvas: document.getElementById("game"),
+      keyEls: []
+    };
+
+    const keySets = {
+      4: ["d", "f", "j", "k"],
+      6: ["a", "s", "d", "j", "k", "l"],
+      8: ["a", "s", "d", "f", "j", "k", "l", ";"]
+    };
+    const laneBaseColors = ["#475463", "#4c5968", "#526070", "#586676", "#5c6a7a", "#667382"];
+    let keyMap = {};
+    let laneCount = 4;
+    let hitWindow = 0.13;
+    let perfectWindow = 0.055;
+    const SCROLL_TIME = 2.4;
+    let offsetSec = 0;
+    let focusMode = "auto";
+    let beatTrack = true;
+    let beatOffset = 0;
+    let beatLock = 0.65;
+    let timeSig = "auto";
+    let barBeats = 4;
+    let difficulty = "normal";
+    let enhanceMode = true;
+    let laneFlash = [];
+    const FLASH_DURATION = 0.18;
+    let sfxVolume = 0.8;
+    let keyLabel = "-";
+    let keyBaseFreq = 1760;
+    const particles = [];
+
+    let ctx;
+    let audioBuffer = null;
+    let sourceNode = null;
+    let fileName = "";
+    let chart = [];
+    let baseOnsets = [];
+    let onsetsByMode = null;
+    let estimatedBpm = 120;
+    let startTime = 0;
+    let rafId = 0;
+    let running = false;
+    let score = 0;
+    let combo = 0;
+    let nextMissIndex = 0;
+
+    const gameState = {
+      width: ui.canvas.width,
+      height: ui.canvas.height,
+      judgeY: ui.canvas.height - 90
+    };
+
+    const g = ui.canvas.getContext("2d");
+
+    function buildKeyMap() {
+      keyMap = {};
+      const keys = keySets[laneCount] || keySets[4];
+      keys.forEach((k, i) => {
+        keyMap[k] = i;
+      });
+      laneFlash = new Array(laneCount).fill(-999);
+      ui.keyEls = [];
+      const keysWrap = document.querySelector(".keys");
+      keysWrap.style.gridTemplateColumns = `repeat(${laneCount}, 1fr)`;
+      keysWrap.innerHTML = "";
+      for (let i = 0; i < laneCount; i += 1) {
+        const el = document.createElement("div");
+        el.className = "key";
+        el.textContent = (keys[i] || "?").toUpperCase();
+        keysWrap.appendChild(el);
+        ui.keyEls.push(el);
+      }
+    }
+
+    function updateDifficulty() {
+      const map = {
+        easy: { density: 0.8, hit: 0.15, perfect: 0.065, label: "简单" },
+        normal: { density: 1.0, hit: 0.13, perfect: 0.055, label: "普通" },
+        hard: { density: 1.2, hit: 0.11, perfect: 0.05, label: "困难" },
+        expert: { density: 1.45, hit: 0.095, perfect: 0.045, label: "地狱" }
+      };
+      const preset = map[difficulty] || map.normal;
+      ui.density.value = String(preset.density);
+      ui.densityText.textContent = `${preset.density.toFixed(2)}x`;
+      hitWindow = preset.hit;
+      perfectWindow = preset.perfect;
+      ui.difficultyText.textContent = preset.label;
+    }
+
+    function laneColor(index) {
+      return laneBaseColors[index % laneBaseColors.length];
+    }
+
+    function setStatus(text, error = false) {
+      ui.status.textContent = text;
+      ui.status.style.color = error ? "var(--danger)" : "var(--muted)";
+    }
+
+    function ensureAudioContext() {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      return ctx;
+    }
+
+    function buildReverbImpulse(ctx, seconds = 1.1, decay = 2.6) {
+      const rate = ctx.sampleRate;
+      const length = Math.floor(rate * seconds);
+      const impulse = ctx.createBuffer(2, length, rate);
+      for (let c = 0; c < 2; c += 1) {
+        const data = impulse.getChannelData(c);
+        for (let i = 0; i < length; i += 1) {
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+        }
+      }
+      return impulse;
+    }
+
+    function fftInPlace(re, im) {
+      const n = re.length;
+      for (let i = 1, j = 0; i < n; i += 1) {
+        let bit = n >> 1;
+        for (; j & bit; bit >>= 1) j ^= bit;
+        j ^= bit;
+        if (i < j) {
+          const tr = re[i];
+          re[i] = re[j];
+          re[j] = tr;
+          const ti = im[i];
+          im[i] = im[j];
+          im[j] = ti;
+        }
+      }
+      for (let len = 2; len <= n; len <<= 1) {
+        const ang = -2 * Math.PI / len;
+        const wlenCos = Math.cos(ang);
+        const wlenSin = Math.sin(ang);
+        for (let i = 0; i < n; i += len) {
+          let wCos = 1;
+          let wSin = 0;
+          for (let j = 0; j < len / 2; j += 1) {
+            const uRe = re[i + j];
+            const uIm = im[i + j];
+            const vRe = re[i + j + len / 2] * wCos - im[i + j + len / 2] * wSin;
+            const vIm = re[i + j + len / 2] * wSin + im[i + j + len / 2] * wCos;
+            re[i + j] = uRe + vRe;
+            im[i + j] = uIm + vIm;
+            re[i + j + len / 2] = uRe - vRe;
+            im[i + j + len / 2] = uIm - vIm;
+            const nextCos = wCos * wlenCos - wSin * wlenSin;
+            const nextSin = wCos * wlenSin + wSin * wlenCos;
+            wCos = nextCos;
+            wSin = nextSin;
+          }
+        }
+      }
+    }
+
+    function estimateKeyFromBuffer(buffer) {
+      const mono = toMono(buffer);
+      const sr = buffer.sampleRate;
+      const size = 2048;
+      const hop = 4096;
+      const maxFrames = 120;
+      const chroma = new Float32Array(12);
+      const re = new Float32Array(size);
+      const im = new Float32Array(size);
+      const hann = new Float32Array(size);
+      for (let i = 0; i < size; i += 1) {
+        hann[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (size - 1)));
+      }
+
+      const step = Math.max(hop, Math.floor(mono.length / maxFrames));
+      for (let start = 0; start + size < mono.length; start += step) {
+        for (let i = 0; i < size; i += 1) {
+          re[i] = mono[start + i] * hann[i];
+          im[i] = 0;
+        }
+        fftInPlace(re, im);
+        const freqRes = sr / size;
+        for (let bin = 2; bin < size / 2; bin += 1) {
+          const freq = bin * freqRes;
+          if (freq < 60 || freq > 4000) continue;
+          const mag = re[bin] * re[bin] + im[bin] * im[bin];
+          const pitch = 12 * Math.log2(freq / 440) + 9;
+          const pc = ((Math.round(pitch) % 12) + 12) % 12;
+          chroma[pc] += mag;
+        }
+      }
+
+      const total = chroma.reduce((a, b) => a + b, 0);
+      if (total <= 0) return { label: "-", root: 9, mode: "major" };
+      for (let i = 0; i < 12; i += 1) chroma[i] /= total;
+
+      const majorProfile = [0.748, 0.06, 0.488, 0.082, 0.67, 0.46, 0.096, 0.715, 0.104, 0.366, 0.057, 0.4];
+      const minorProfile = [0.712, 0.084, 0.474, 0.618, 0.049, 0.46, 0.105, 0.747, 0.404, 0.067, 0.133, 0.33];
+      const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+      let best = { score: -1, root: 0, mode: "major" };
+
+      for (let root = 0; root < 12; root += 1) {
+        let scoreMaj = 0;
+        let scoreMin = 0;
+        for (let i = 0; i < 12; i += 1) {
+          const idx = (i + root) % 12;
+          scoreMaj += chroma[idx] * majorProfile[i];
+          scoreMin += chroma[idx] * minorProfile[i];
+        }
+        if (scoreMaj > best.score) best = { score: scoreMaj, root, mode: "major" };
+        if (scoreMin > best.score) best = { score: scoreMin, root, mode: "minor" };
+      }
+
+      const label = `${noteNames[best.root]} ${best.mode === "major" ? "major" : "minor"}`;
+      return { label, root: best.root, mode: best.mode };
+    }
+
+    function playHitSound(kind) {
+      const audioCtx = ensureAudioContext();
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+      const now = audioCtx.currentTime;
+      const baseRoot = keyBaseFreq || 1760;
+      const base = kind === "perfect" ? baseRoot * 1.18 : baseRoot;
+      const partials = [1, 2.1, 2.9, 4.1, 5.3];
+      const gains = [0.16, 0.1, 0.07, 0.05, 0.035];
+      const output = audioCtx.createGain();
+      const dry = audioCtx.createGain();
+      const wet = audioCtx.createGain();
+      const convolver = audioCtx.createConvolver();
+      if (!convolver.buffer) convolver.buffer = buildReverbImpulse(audioCtx, 1.3, 3.2);
+      output.gain.setValueAtTime(0.0001, now);
+      output.gain.exponentialRampToValueAtTime(0.6 * sfxVolume, now + 0.01);
+      output.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+      dry.gain.value = 0.35;
+      wet.gain.value = 1.1;
+      output.connect(dry);
+      output.connect(convolver);
+      convolver.connect(wet);
+      dry.connect(audioCtx.destination);
+      wet.connect(audioCtx.destination);
+
+      for (let i = 0; i < partials.length; i += 1) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(base * partials[i], now);
+        osc.frequency.exponentialRampToValueAtTime(base * partials[i] * 0.985, now + 0.12);
+        gain.gain.setValueAtTime(gains[i], now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55 + i * 0.06);
+        osc.connect(gain);
+        gain.connect(output);
+        osc.start(now);
+        osc.stop(now + 0.6 + i * 0.06);
+      }
+
+      // Brushed sparkle: longer, smoother high-band noise tail.
+      const noiseDur = 0.65;
+      const noiseBuffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * noiseDur), audioCtx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < data.length; i += 1) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      }
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      const bp = audioCtx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 8200;
+      bp.Q.value = 0.4;
+      const lp = audioCtx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 11000;
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.0001, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.32 * sfxVolume, now + 0.02);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+      noise.connect(bp);
+      bp.connect(lp);
+      lp.connect(noiseGain);
+      noiseGain.connect(output);
+      noise.start(now);
+      noise.stop(now + noiseDur);
+    }
+
+    function resetScore() {
+      score = 0;
+      combo = 0;
+      nextMissIndex = 0;
+      ui.score.textContent = "0";
+      ui.combo.textContent = "0";
+    }
+
+    function stopGame() {
+      running = false;
+      cancelAnimationFrame(rafId);
+      if (sourceNode) {
+        sourceNode.onended = null;
+        sourceNode.stop(0);
+        sourceNode.disconnect();
+        sourceNode = null;
+      }
+    }
+
+    function toMono(buffer) {
+      const channels = buffer.numberOfChannels;
+      const length = buffer.length;
+      const mono = new Float32Array(length);
+      for (let c = 0; c < channels; c += 1) {
+        const data = buffer.getChannelData(c);
+        for (let i = 0; i < length; i += 1) mono[i] += data[i] / channels;
+      }
+      return mono;
+    }
+
+    function movingAverage(values, radius) {
+      const out = new Float32Array(values.length);
+      let sum = 0;
+      for (let i = 0; i < values.length; i += 1) {
+        sum += values[i];
+        if (i > radius) sum -= values[i - radius - 1];
+        const size = Math.min(i + 1, radius + 1);
+        out[i] = sum / size;
+      }
+      return out;
+    }
+
+    function preEmphasis(input, coeff = 0.97) {
+      const out = new Float32Array(input.length);
+      if (!input.length) return out;
+      out[0] = input[0];
+      for (let i = 1; i < input.length; i += 1) {
+        out[i] = input[i] - coeff * input[i - 1];
+      }
+      return out;
+    }
+
+    async function filterDrumBand(buffer) {
+      const offline = new OfflineAudioContext(1, buffer.length, buffer.sampleRate);
+      const source = offline.createBufferSource();
+      source.buffer = buffer;
+      const hp = offline.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 60;
+      hp.Q.value = 0.707;
+      const lp = offline.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 2400;
+      lp.Q.value = 0.707;
+      source.connect(hp);
+      hp.connect(lp);
+      lp.connect(offline.destination);
+      source.start(0);
+      return offline.startRendering();
+    }
+
+    async function filterGuitarBand(buffer) {
+      const offline = new OfflineAudioContext(1, buffer.length, buffer.sampleRate);
+      const source = offline.createBufferSource();
+      source.buffer = buffer;
+      const hp = offline.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 140;
+      hp.Q.value = 0.707;
+      const lp = offline.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 5200;
+      lp.Q.value = 0.707;
+      source.connect(hp);
+      hp.connect(lp);
+      lp.connect(offline.destination);
+      source.start(0);
+      return offline.startRendering();
+    }
+
+    async function filterPianoBand(buffer) {
+      const offline = new OfflineAudioContext(1, buffer.length, buffer.sampleRate);
+      const source = offline.createBufferSource();
+      source.buffer = buffer;
+      const hp = offline.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 120;
+      hp.Q.value = 0.707;
+      const lp = offline.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 6500;
+      lp.Q.value = 0.707;
+      source.connect(hp);
+      hp.connect(lp);
+      lp.connect(offline.destination);
+      source.start(0);
+      return offline.startRendering();
+    }
+
+    async function filterVocalBand(buffer) {
+      const offline = new OfflineAudioContext(1, buffer.length, buffer.sampleRate);
+      const source = offline.createBufferSource();
+      source.buffer = buffer;
+      const hp = offline.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 160;
+      hp.Q.value = 0.707;
+      const lp = offline.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 3400;
+      lp.Q.value = 0.707;
+      source.connect(hp);
+      hp.connect(lp);
+      lp.connect(offline.destination);
+      source.start(0);
+      return offline.startRendering();
+    }
+
+    function analyzeOnsets(buffer, opts = {}) {
+      const sensitivity = opts.sensitivity || 1;
+      const mono = toMono(buffer);
+      const emphasized = preEmphasis(mono);
+      const sr = buffer.sampleRate;
+      const frame = 1024;
+      const hop = 512;
+      const totalFrames = Math.floor((mono.length - frame) / hop);
+      const energy = new Float32Array(totalFrames);
+
+      for (let i = 0; i < totalFrames; i += 1) {
+        const start = i * hop;
+        let e = 0;
+        for (let j = 0; j < frame; j += 1) {
+          const v = emphasized[start + j];
+          e += v * v;
+        }
+        energy[i] = Math.sqrt(e / frame);
+      }
+
+      const smooth = movingAverage(energy, 8);
+      const novelty = new Float32Array(totalFrames);
+      for (let i = 1; i < totalFrames; i += 1) {
+        novelty[i] = Math.max(0, Math.log1p(smooth[i]) - Math.log1p(smooth[i - 1]));
+      }
+
+      const local = movingAverage(novelty, 30);
+      let mean = 0;
+      for (let i = 0; i < novelty.length; i += 1) mean += novelty[i];
+      mean /= Math.max(1, novelty.length);
+      let variance = 0;
+      for (let i = 0; i < novelty.length; i += 1) {
+        const d = novelty[i] - mean;
+        variance += d * d;
+      }
+      const std = Math.sqrt(variance / Math.max(1, novelty.length));
+      const peaks = [];
+      let lastPeakTime = -999;
+      for (let i = 2; i < novelty.length - 2; i += 1) {
+        const th = local[i] * (1.4 / sensitivity) + std * (0.25 / sensitivity) + 0.0009 / sensitivity;
+        const isPeak = novelty[i] > th &&
+          novelty[i] > novelty[i - 1] &&
+          novelty[i] >= novelty[i + 1];
+        if (!isPeak) continue;
+
+        const t = (i * hop) / sr;
+        if (t - lastPeakTime < 0.075) continue;
+        peaks.push({ t, v: novelty[i] });
+        lastPeakTime = t;
+      }
+      return peaks;
+    }
+
+    function mergeOnsetsWeighted(lists, weights, mergeWindow = 0.045) {
+      const all = [];
+      for (const [mode, onsets] of Object.entries(lists)) {
+        const w = weights[mode] || 1;
+        for (const o of onsets) {
+          all.push({ t: o.t, v: o.v * w });
+        }
+      }
+      all.sort((a, b) => a.t - b.t);
+      const merged = [];
+      for (const o of all) {
+        const last = merged[merged.length - 1];
+        if (last && Math.abs(o.t - last.t) < mergeWindow) {
+          last.t = (last.t * last.v + o.t * o.v) / (last.v + o.v);
+          last.v += o.v;
+        } else {
+          merged.push({ t: o.t, v: o.v });
+        }
+      }
+      return merged;
+    }
+
+    function estimateBpmFromOnsets(onsets) {
+      if (onsets.length < 8) return 120;
+      const diffs = [];
+      for (let i = 1; i < onsets.length; i += 1) {
+        const d = onsets[i].t - onsets[i - 1].t;
+        if (d > 0.18 && d < 1.0) diffs.push(d);
+      }
+      if (!diffs.length) return 120;
+
+      const bins = new Map();
+      for (const d of diffs) {
+        const bpmA = 60 / d;
+        const candidates = [bpmA, bpmA * 2, bpmA / 2];
+        for (let bpm of candidates) {
+          while (bpm < 70) bpm *= 2;
+          while (bpm > 190) bpm /= 2;
+          const key = Math.round(bpm);
+          bins.set(key, (bins.get(key) || 0) + 1);
+        }
+      }
+
+      let best = 120;
+      let bestCount = -1;
+      for (const [b, count] of bins.entries()) {
+        if (count > bestCount) {
+          bestCount = count;
+          best = b;
+        }
+      }
+      return Math.min(190, Math.max(70, best));
+    }
+
+    function quantize(value, step) {
+      return Math.round(value / step) * step;
+    }
+
+    function estimateBeatPhase(onsets, bpm) {
+      if (onsets.length < 6) return 0;
+      const beat = 60 / bpm;
+      const grid = beat / 4;
+      const sigma = grid * 0.22;
+      let bestOffset = 0;
+      let bestScore = -1;
+      const samples = 24;
+      for (let i = 0; i < samples; i += 1) {
+        const offset = (i / samples) * grid;
+        let score = 0;
+        for (const o of onsets) {
+          const pos = (o.t - offset) % grid;
+          const dist = Math.min(pos, grid - pos);
+          const w = 0.6 + Math.min(1, o.v * 8);
+          score += Math.exp(-(dist * dist) / (2 * sigma * sigma)) * w;
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestOffset = offset;
+        }
+      }
+      return bestOffset;
+    }
+
+    function parseTimeSig(value) {
+      if (value === "4/4") return { beats: 4, label: "4/4" };
+      if (value === "3/4") return { beats: 3, label: "3/4" };
+      if (value === "7/8") return { beats: 3.5, label: "7/8" };
+      if (value === "6/8") return { beats: 3, label: "6/8" };
+      if (value === "9/8") return { beats: 4.5, label: "9/8" };
+      if (value === "5/4") return { beats: 5, label: "5/4" };
+      if (value === "12/8") return { beats: 6, label: "12/8" };
+      return { beats: 4, label: "自动" };
+    }
+
+    function estimateTimeSignature(onsets, bpm) {
+      const beat = 60 / bpm;
+      const candidates = [
+        { beats: 4, label: "4/4" },
+        { beats: 3, label: "3/4" },
+        { beats: 3.5, label: "7/8" },
+        { beats: 3, label: "6/8" },
+        { beats: 4.5, label: "9/8" },
+        { beats: 5, label: "5/4" }
+        ,
+        { beats: 6, label: "12/8" }
+      ];
+
+      let best = candidates[0];
+      let bestScore = -1;
+      const bins = 16;
+      for (const c of candidates) {
+        const barSec = beat * c.beats;
+        const hist = new Array(bins).fill(0);
+        let total = 0;
+        for (const o of onsets) {
+          const pos = (o.t % barSec) / barSec;
+          const idx = Math.floor(pos * bins);
+          hist[idx] += o.v;
+          total += o.v;
+        }
+        if (total <= 0) continue;
+        const maxBin = Math.max(...hist);
+        const score = maxBin / total;
+        if (score > bestScore) {
+          bestScore = score;
+          best = c;
+        }
+      }
+      return best;
+    }
+
+    function buildChartFromOnsets(onsets, bpm, density, phaseOffset = 0, lock = 0.65) {
+      if (!onsets.length) return [];
+      const beat = 60 / bpm;
+      const grid = beat / 4;
+      const maxV = onsets.reduce((m, o) => Math.max(m, o.v), 0) || 1;
+      const quantized = [];
+      let last = -999;
+      let lane = 0;
+
+      for (const o of onsets) {
+        const q = Math.round((o.t - phaseOffset) / grid) * grid + phaseOffset;
+        const dist = Math.abs(o.t - q);
+        const t = dist <= grid * 0.45 ? (o.t * (1 - lock) + q * lock) : o.t;
+        if (t - last < grid * 0.5) continue;
+        const keepProb = Math.min(1, density * (0.55 + (o.v / maxV) * 0.9));
+        if (Math.random() > keepProb) continue;
+        quantized.push({ t, v: o.v });
+        last = t;
+      }
+
+      const notes = [];
+      for (let i = 0; i < quantized.length; i += 1) {
+        const n = quantized[i];
+        const strong = n.v > maxV * 0.55 && i % 7 === 0;
+        if (strong && laneCount >= 6) {
+          const left = lane % laneCount;
+          const right = (left + Math.floor(laneCount / 2)) % laneCount;
+          notes.push({ t: n.t, lane: left });
+          notes.push({ t: n.t, lane: right });
+          lane = (lane + 1) % laneCount;
+        } else {
+          lane = (lane + 1 + (i % 2)) % laneCount;
+          notes.push({ t: n.t, lane });
+        }
+      }
+      return notes.sort((a, b) => a.t - b.t);
+    }
+
+    function chooseSegments(modes, barSec) {
+      const barScores = [];
+      let maxT = 0;
+      for (const [mode, onsets] of Object.entries(modes)) {
+        for (const o of onsets) {
+          const idx = Math.floor(o.t / barSec);
+          if (!barScores[idx]) barScores[idx] = {};
+          barScores[idx][mode] = (barScores[idx][mode] || 0) + o.v;
+          if (o.t > maxT) maxT = o.t;
+        }
+      }
+
+      const bars = Math.max(1, Math.ceil(maxT / barSec));
+      const barModes = [];
+      for (let i = 0; i < bars; i += 1) {
+        const bucket = barScores[i] || {};
+        let bestMode = Object.keys(modes)[0] || "drum";
+        let bestScore = -1;
+        for (const mode of Object.keys(modes)) {
+          const value = bucket[mode] || 0;
+          if (value > bestScore) {
+            bestScore = value;
+            bestMode = mode;
+          }
+        }
+        barModes[i] = bestMode;
+      }
+
+      const smoothed = barModes.map((mode, i) => {
+        const window = [barModes[i - 1], barModes[i], barModes[i + 1]].filter(Boolean);
+        const counts = {};
+        for (const m of window) counts[m] = (counts[m] || 0) + 1;
+        let best = mode;
+        let bestCount = -1;
+        for (const m of Object.keys(counts)) {
+          if (counts[m] > bestCount) {
+            bestCount = counts[m];
+            best = m;
+          }
+        }
+        return best;
+      });
+
+      const segments = [];
+      let startBar = 0;
+      for (let i = 1; i <= smoothed.length; i += 1) {
+        if (i === smoothed.length || smoothed[i] !== smoothed[i - 1]) {
+          segments.push({
+            mode: smoothed[i - 1],
+            start: startBar * barSec,
+            end: i * barSec,
+            bars: i - startBar
+          });
+          startBar = i;
+        }
+      }
+
+      // Merge too-short segments into neighbors to avoid jitter.
+      const merged = [];
+      for (const seg of segments) {
+        if (merged.length === 0) {
+          merged.push(seg);
+          continue;
+        }
+        if (seg.bars < 2) {
+          merged[merged.length - 1].end = seg.end;
+          merged[merged.length - 1].bars += seg.bars;
+        } else {
+          merged.push(seg);
+        }
+      }
+      return merged;
+    }
+
+    function detectSections(onsets, barSec) {
+      const bars = Math.max(1, Math.ceil(onsets[onsets.length - 1]?.t / barSec || 1));
+      const energy = new Array(bars).fill(0);
+      for (const o of onsets) {
+        const idx = Math.floor(o.t / barSec);
+        if (idx >= 0 && idx < bars) energy[idx] += o.v;
+      }
+      const smooth = energy.map((_, i) => {
+        const a = energy[i - 1] || 0;
+        const b = energy[i] || 0;
+        const c = energy[i + 1] || 0;
+        return (a + b * 2 + c) / 4;
+      });
+      const sections = [];
+      let start = 0;
+      for (let i = 1; i < bars; i += 1) {
+        const prev = smooth[i - 1] || 1e-6;
+        const curr = smooth[i] || 1e-6;
+        const ratio = curr / prev;
+        const longEnough = i - start >= 3;
+        if (longEnough && (ratio > 1.6 || ratio < 0.6)) {
+          sections.push({ startBar: start, endBar: i });
+          start = i;
+        }
+      }
+      sections.push({ startBar: start, endBar: bars });
+      return sections;
+    }
+
+    function buildChartAuto(modes, bpm, density, phaseOffset, lock, barSec) {
+      const segments = chooseSegments(modes, barSec);
+      const sectionEnergy = detectSections(modes.mix || [], barSec);
+      const overallEnergy = (modes.mix || []).reduce((s, o) => s + o.v, 0) / Math.max(1, sectionEnergy.length);
+      const barBins = 16;
+      const buildTemplate = (onsets) => {
+        if (!onsets.length) return [];
+        const counts = new Map();
+        for (const o of onsets) {
+          const pos = (o.t % barSec) / barSec;
+          const bin = Math.round(pos * barBins);
+          const key = Math.max(0, Math.min(barBins, bin));
+          counts.set(key, (counts.get(key) || 0) + 1);
+        }
+        const max = Math.max(...counts.values());
+        const template = [];
+        for (const [k, v] of counts.entries()) {
+          if (v >= max * 0.65) template.push(k / barBins);
+        }
+        return template.sort((a, b) => a - b);
+      };
+
+      const templates = sectionEnergy.map((sec) => {
+        const onsets = (modes.mix || []).filter((o) => {
+          const bar = Math.floor(o.t / barSec);
+          return bar >= sec.startBar && bar < sec.endBar;
+        });
+        return buildTemplate(onsets);
+      });
+
+      const sectionIndexForBar = (bar) => {
+        for (let i = 0; i < sectionEnergy.length; i += 1) {
+          const sec = sectionEnergy[i];
+          if (bar >= sec.startBar && bar < sec.endBar) return i;
+        }
+        return 0;
+      };
+
+      const merged = [];
+      for (const seg of segments) {
+        const segBarStart = Math.floor(seg.start / barSec);
+        const sec = sectionEnergy.find((s) => segBarStart >= s.startBar && segBarStart < s.endBar) || sectionEnergy[0];
+        const secOnsets = (modes.mix || []).filter((o) => {
+          const bar = Math.floor(o.t / barSec);
+          return bar >= sec.startBar && bar < sec.endBar;
+        });
+        const secEnergy = secOnsets.reduce((s, o) => s + o.v, 0) / Math.max(1, sec.endBar - sec.startBar);
+        const scale = overallEnergy > 0 ? Math.min(1.25, Math.max(0.8, secEnergy / overallEnergy)) : 1;
+        const segDensity = density * scale;
+        const onsets = (modes[seg.mode] || []).filter((o) => o.t >= seg.start && o.t < seg.end);
+        const chunk = buildChartFromOnsets(onsets, bpm, segDensity, phaseOffset, lock);
+        // Align rhythm to section template when close.
+        for (const n of chunk) {
+          const bar = Math.floor(n.t / barSec);
+          const idx = sectionIndexForBar(bar);
+          const template = templates[idx] || [];
+          if (!template.length) continue;
+          const pos = (n.t % barSec) / barSec;
+          let best = pos;
+          let bestDist = 1;
+          for (const tPos of template) {
+            const d = Math.abs(pos - tPos);
+            if (d < bestDist) {
+              bestDist = d;
+              best = tPos;
+            }
+          }
+          if (bestDist <= 0.08) {
+            n.t = bar * barSec + best * barSec;
+          }
+        }
+        for (const n of chunk) merged.push(n);
+      }
+      return merged.sort((a, b) => a.t - b.t);
+    }
+
+    function render(currentTime = 0) {
+      const { width, height, judgeY } = gameState;
+      g.clearRect(0, 0, width, height);
+
+      g.fillStyle = "rgba(11, 16, 24, 0.5)";
+      g.fillRect(0, 0, width, height);
+
+      const laneWidth = width / laneCount;
+      for (let lane = 0; lane < laneCount; lane += 1) {
+        g.fillStyle = lane % 2 === 0 ? "rgba(16, 24, 38, 0.44)" : "rgba(14, 22, 34, 0.4)";
+        g.fillRect(lane * laneWidth, 0, laneWidth, height);
+
+        g.strokeStyle = "rgba(37, 50, 68, 0.45)";
+        g.lineWidth = 1;
+        g.beginPath();
+        g.moveTo(lane * laneWidth, 0);
+        g.lineTo(lane * laneWidth, height);
+        g.stroke();
+
+        const flashAge = currentTime - laneFlash[lane];
+        if (flashAge >= 0 && flashAge < FLASH_DURATION) {
+          const alpha = 1 - flashAge / FLASH_DURATION;
+          g.fillStyle = `rgba(130, 150, 172, ${0.22 * alpha})`;
+          g.fillRect(lane * laneWidth, 0, laneWidth, height);
+          g.fillStyle = `rgba(200, 210, 220, ${0.2 * alpha})`;
+          g.fillRect(lane * laneWidth, judgeY - 14, laneWidth, 28);
+        }
+      }
+
+      g.strokeStyle = "rgba(37, 50, 68, 0.45)";
+      g.beginPath();
+      g.moveTo(width, 0);
+      g.lineTo(width, height);
+      g.stroke();
+
+      g.fillStyle = "rgba(144, 160, 176, 0.28)";
+      g.fillRect(0, judgeY - 2, width, 4);
+
+      for (const note of chart) {
+        if (note.hit) continue;
+        const dt = (note.t + offsetSec) - currentTime;
+        if (dt < -0.4 || dt > SCROLL_TIME) continue;
+        const y = judgeY - (dt / SCROLL_TIME) * (height - 40);
+        const x = note.lane * laneWidth + 12;
+        const w = laneWidth - 24;
+        const h = 16;
+        g.fillStyle = laneColor(note.lane);
+        g.fillRect(x, y - h / 2, w, h);
+      }
+
+      // Particle sparkles.
+      for (let i = particles.length - 1; i >= 0; i -= 1) {
+        const p = particles[i];
+        const age = currentTime - p.t;
+        if (age > p.life) {
+          particles.splice(i, 1);
+          continue;
+        }
+        const alpha = 1 - age / p.life;
+        const px = p.x + p.vx * age;
+        const py = p.y + p.vy * age + 80 * age * age;
+        g.fillStyle = `rgba(196, 206, 216, ${0.6 * alpha})`;
+        g.beginPath();
+        g.arc(px, py, p.r * (0.7 + 0.6 * alpha), 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+
+    function updateMisses(currentTime) {
+      while (nextMissIndex < chart.length) {
+        const n = chart[nextMissIndex];
+        if (n.hit) {
+          nextMissIndex += 1;
+          continue;
+        }
+        if (currentTime - (n.t + offsetSec) > hitWindow) {
+          n.hit = true;
+          combo = 0;
+          ui.combo.textContent = "0";
+          nextMissIndex += 1;
+          continue;
+        }
+        break;
+      }
+    }
+
+    function loop() {
+      if (!running) return;
+      const t = ctx.currentTime - startTime;
+      updateMisses(t);
+      render(t);
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function hitLane(lane) {
+      if (!running) return;
+      const t = ctx.currentTime - startTime;
+      laneFlash[lane] = t;
+      playHitSound("tap");
+
+      let bestIndex = -1;
+      let bestDelta = Infinity;
+
+      for (let i = nextMissIndex; i < chart.length; i += 1) {
+        const n = chart[i];
+        if (n.hit) continue;
+        if (n.lane !== lane) continue;
+        const d = Math.abs(t - (n.t + offsetSec));
+        if (d < bestDelta) {
+          bestDelta = d;
+          bestIndex = i;
+        }
+        if ((n.t + offsetSec) - t > hitWindow) break;
+      }
+
+      if (bestIndex >= 0 && bestDelta <= hitWindow) {
+        chart[bestIndex].hit = true;
+        combo += 1;
+        const perfect = bestDelta <= perfectWindow;
+        const gain = perfect ? 300 : 180;
+        score += gain + combo * 2;
+        ui.score.textContent = String(score);
+        ui.combo.textContent = String(combo);
+        laneFlash[lane] = t;
+        playHitSound(perfect ? "perfect" : "good");
+        const laneWidth = gameState.width / laneCount;
+        const baseX = lane * laneWidth + laneWidth / 2;
+        const baseY = gameState.judgeY - 6;
+        const count = perfect ? 14 : 10;
+        for (let i = 0; i < count; i += 1) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = (Math.random() * 70 + 50) * (perfect ? 1.1 : 1.0);
+          particles.push({
+            x: baseX + (Math.random() * 16 - 8),
+            y: baseY + (Math.random() * 6 - 3),
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 40,
+            r: Math.random() * 1.8 + 0.8,
+            t,
+            life: 0.35 + Math.random() * 0.15
+          });
+        }
+      } else {
+        combo = 0;
+        ui.combo.textContent = "0";
+      }
+    }
+
+    async function loadAudio(file) {
+      const audioCtx = ensureAudioContext();
+      const data = await file.arrayBuffer();
+      return audioCtx.decodeAudioData(data.slice(0));
+    }
+
+    async function doAnalyze() {
+      if (!audioBuffer) return;
+      stopGame();
+      resetScore();
+      setStatus("正在提取打击点…");
+      render(0);
+
+      await new Promise((r) => setTimeout(r, 30));
+      let baseBuffer = audioBuffer;
+      const modeBuffers = {};
+      try {
+        modeBuffers.drum = await filterDrumBand(audioBuffer);
+        modeBuffers.guitar = await filterGuitarBand(audioBuffer);
+        modeBuffers.piano = await filterPianoBand(audioBuffer);
+        modeBuffers.vocal = await filterVocalBand(audioBuffer);
+      } catch (err) {
+        modeBuffers.drum = audioBuffer;
+        modeBuffers.guitar = audioBuffer;
+        modeBuffers.piano = audioBuffer;
+        modeBuffers.vocal = audioBuffer;
+      }
+
+      const sens = enhanceMode ? 1.35 : 1;
+      onsetsByMode = {
+        drum: analyzeOnsets(modeBuffers.drum, { sensitivity: sens }),
+        guitar: analyzeOnsets(modeBuffers.guitar, { sensitivity: sens }),
+        piano: analyzeOnsets(modeBuffers.piano, { sensitivity: sens }),
+        vocal: analyzeOnsets(modeBuffers.vocal, { sensitivity: sens }),
+        mix: analyzeOnsets(audioBuffer, { sensitivity: sens })
+      };
+
+      baseOnsets = enhanceMode
+        ? mergeOnsetsWeighted(onsetsByMode, { drum: 1.2, bass: 1.1, guitar: 1.0, piano: 0.9, vocal: 0.8, mix: 0.9 })
+        : onsetsByMode.mix;
+      estimatedBpm = estimateBpmFromOnsets(baseOnsets);
+      const keyInfo = estimateKeyFromBuffer(audioBuffer);
+      keyLabel = keyInfo.label;
+      keyBaseFreq = 440 * Math.pow(2, (keyInfo.root - 9) / 12) * 4;
+      ui.keyStat.textContent = keyLabel;
+      beatOffset = beatTrack ? estimateBeatPhase(baseOnsets, estimatedBpm) : 0;
+      if (timeSig === "auto") {
+        const est = estimateTimeSignature(baseOnsets, estimatedBpm);
+        barBeats = est.beats;
+        ui.timeSigText.textContent = est.label;
+      } else {
+        const parsed = parseTimeSig(timeSig);
+        barBeats = parsed.beats;
+        ui.timeSigText.textContent = parsed.label;
+      }
+      const barSec = (60 / estimatedBpm) * barBeats;
+
+      if (focusMode === "auto") {
+        const autoModes = {
+          drum: onsetsByMode.drum,
+          guitar: onsetsByMode.guitar,
+          piano: onsetsByMode.piano,
+          vocal: onsetsByMode.vocal
+        };
+        chart = buildChartAuto(autoModes, estimatedBpm, Number(ui.density.value), beatOffset, beatLock, barSec);
+      } else {
+        const chosen = onsetsByMode[focusMode] || onsetsByMode.mix;
+        chart = buildChartFromOnsets(chosen, estimatedBpm, Number(ui.density.value), beatOffset, beatLock);
+      }
+      for (const n of chart) n.hit = false;
+
+      ui.bpm.textContent = String(estimatedBpm);
+      ui.notes.textContent = String(chart.length);
+      ui.play.disabled = chart.length === 0;
+      ui.regen.disabled = chart.length === 0;
+      setStatus(
+        chart.length
+          ? `已为《${fileName}》生成谱面，可直接开始游戏。`
+          : "没有检测到足够的打击点，请提高谱面密度或换首节奏更明显的歌。",
+        chart.length === 0
+      );
+      render(0);
+    }
+
+    function regenChart() {
+      if (!baseOnsets.length || !onsetsByMode) return;
+      stopGame();
+      resetScore();
+      beatOffset = beatTrack ? estimateBeatPhase(baseOnsets, estimatedBpm) : 0;
+      if (timeSig === "auto") {
+        const est = estimateTimeSignature(baseOnsets, estimatedBpm);
+        barBeats = est.beats;
+        ui.timeSigText.textContent = est.label;
+      } else {
+        const parsed = parseTimeSig(timeSig);
+        barBeats = parsed.beats;
+        ui.timeSigText.textContent = parsed.label;
+      }
+      const barSec = (60 / estimatedBpm) * barBeats;
+      if (focusMode === "auto") {
+        const autoModes = {
+          drum: onsetsByMode.drum,
+          guitar: onsetsByMode.guitar,
+          piano: onsetsByMode.piano,
+          vocal: onsetsByMode.vocal
+        };
+        chart = buildChartAuto(autoModes, estimatedBpm, Number(ui.density.value), beatOffset, beatLock, barSec);
+      } else {
+        const chosen = onsetsByMode[focusMode] || onsetsByMode.mix;
+        chart = buildChartFromOnsets(chosen, estimatedBpm, Number(ui.density.value), beatOffset, beatLock);
+      }
+      for (const n of chart) n.hit = false;
+      ui.notes.textContent = String(chart.length);
+      ui.play.disabled = chart.length === 0;
+      setStatus(`已按 ${Number(ui.density.value).toFixed(2)}x 密度重建谱面。`, chart.length === 0);
+      render(0);
+    }
+
+    async function startGame() {
+      if (!audioBuffer || !chart.length) return;
+      const audioCtx = ensureAudioContext();
+      if (audioCtx.state === "suspended") await audioCtx.resume();
+
+      stopGame();
+      resetScore();
+      for (const n of chart) n.hit = false;
+
+      sourceNode = audioCtx.createBufferSource();
+      sourceNode.buffer = audioBuffer;
+      sourceNode.connect(audioCtx.destination);
+      sourceNode.onended = () => {
+        running = false;
+        cancelAnimationFrame(rafId);
+        setStatus(`歌曲结束，最终分数 ${score}。`);
+        render(audioBuffer.duration + 1);
+      };
+
+      startTime = audioCtx.currentTime + 0.08;
+      sourceNode.start(startTime);
+      running = true;
+      nextMissIndex = 0;
+      setStatus("游戏进行中…");
+      loop();
+    }
+
+    ui.file.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      fileName = file.name;
+      setStatus("正在解码音频…");
+      ui.analyze.disabled = true;
+      ui.play.disabled = true;
+      ui.regen.disabled = true;
+      stopGame();
+      resetScore();
+      onsetsByMode = null;
+
+      try {
+        audioBuffer = await loadAudio(file);
+        setStatus(`已加载《${fileName}》，点击“分析并生成谱面”。`);
+        ui.analyze.disabled = false;
+        ui.bpm.textContent = "-";
+        ui.notes.textContent = "-";
+        ui.keyStat.textContent = "-";
+      } catch (err) {
+        audioBuffer = null;
+        setStatus(`音频加载失败：${err.message || err}`, true);
+      }
+    });
+
+    ui.density.addEventListener("input", () => {
+      ui.densityText.textContent = `${Number(ui.density.value).toFixed(2)}x`;
+      ui.difficultyText.textContent = "自定义";
+    });
+
+    ui.offset.addEventListener("input", () => {
+      offsetSec = Number(ui.offset.value) / 1000;
+      ui.offsetText.textContent = `${ui.offset.value} ms`;
+    });
+
+    ui.focusMode.addEventListener("change", () => {
+      focusMode = ui.focusMode.value;
+      const map = {
+        auto: "自动切换",
+        drum: "鼓优先",
+        guitar: "吉他优先",
+        piano: "钢琴优先",
+        vocal: "人声优先",
+        mix: "混合"
+      };
+      ui.focusText.textContent = map[focusMode] || "混合";
+    });
+
+    ui.beatTrack.addEventListener("change", () => {
+      beatTrack = ui.beatTrack.checked;
+      ui.beatText.textContent = beatTrack ? "开" : "关";
+    });
+
+    ui.enhanceMode.addEventListener("change", () => {
+      enhanceMode = ui.enhanceMode.checked;
+      ui.enhanceText.textContent = enhanceMode ? "开" : "关";
+    });
+
+    ui.timeSig.addEventListener("change", () => {
+      timeSig = ui.timeSig.value;
+      const map = {
+        auto: "自动",
+        "4/4": "4/4",
+        "3/4": "3/4",
+        "7/8": "7/8",
+        "6/8": "6/8",
+        "9/8": "9/8",
+        "5/4": "5/4",
+        "12/8": "12/8"
+      };
+      ui.timeSigText.textContent = map[timeSig] || "自动";
+    });
+
+    ui.beatLock.addEventListener("input", () => {
+      beatLock = Number(ui.beatLock.value);
+      ui.beatLockText.textContent = `${Math.round(beatLock * 100)}%`;
+    });
+
+    ui.sfxVolume.addEventListener("input", () => {
+      sfxVolume = Number(ui.sfxVolume.value);
+      ui.sfxText.textContent = `${Math.round(sfxVolume * 100)}%`;
+    });
+
+    ui.difficulty.addEventListener("change", () => {
+      difficulty = ui.difficulty.value;
+      updateDifficulty();
+    });
+
+    ui.laneCount.addEventListener("change", () => {
+      laneCount = Number(ui.laneCount.value);
+      ui.laneText.textContent = `${laneCount} 键`;
+      buildKeyMap();
+      if (onsetsByMode && baseOnsets.length) {
+        regenChart();
+      } else {
+        render(0);
+      }
+    });
+
+    ui.analyze.addEventListener("click", doAnalyze);
+    ui.regen.addEventListener("click", regenChart);
+    ui.play.addEventListener("click", startGame);
+
+    window.addEventListener("keydown", (e) => {
+      const lane = keyMap[e.key.toLowerCase()];
+      if (lane === undefined) return;
+      ui.keyEls[lane].classList.add("hit");
+      setTimeout(() => ui.keyEls[lane].classList.remove("hit"), 80);
+      hitLane(lane);
+    });
+
+    buildKeyMap();
+    updateDifficulty();
+    ui.sfxText.textContent = `${Math.round(sfxVolume * 100)}%`;
+    render(0);
+  </script>
+</body>
+</html>
