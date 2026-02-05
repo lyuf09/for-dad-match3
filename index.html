@@ -349,10 +349,14 @@
       </div>
 
       <div class="controls-grid">
-        <div class="group">
+      <div class="group">
         <label class="muted" for="audioFile" data-i18n="label_audio">歌曲文件（mp3/wav/m4a）</label>
-          <input id="audioFile" type="file" accept="audio/*" />
-        </div>
+        <input id="audioFile" type="file" accept="audio/*" />
+      </div>
+
+      <div class="group">
+        <button id="sampleBtn" class="secondary" data-i18n="btn_sample">示例歌曲：HaM - Haze_zzZ</button>
+      </div>
 
         <div class="group">
           <div class="row">
@@ -494,6 +498,7 @@
       analyze: document.getElementById("analyzeBtn"),
       regen: document.getElementById("regenBtn"),
       play: document.getElementById("playBtn"),
+      sample: document.getElementById("sampleBtn"),
       density: document.getElementById("density"),
       densityText: document.getElementById("densityText"),
       offset: document.getElementById("offset"),
@@ -600,6 +605,7 @@
         btn_analyze: "分析并生成谱面",
         btn_regen: "按当前密度重新生成",
         btn_play: "开始游戏",
+        btn_sample: "示例歌曲：HaM - Haze_zzZ",
         status_idle: "等待上传歌曲…",
         status_analyzing: "正在提取打击点…",
         status_loaded: (name) => `已加载《${name}》，点击“分析并生成谱面”。`,
@@ -656,6 +662,7 @@
         btn_analyze: "Analyze & Generate",
         btn_regen: "Regenerate",
         btn_play: "Start",
+        btn_sample: "Sample: HaM - Haze_zzZ",
         status_idle: "Waiting for audio…",
         status_analyzing: "Analyzing onsets…",
         status_loaded: (name) => `Loaded “${name}”. Click Analyze.`,
@@ -1645,6 +1652,25 @@
       return audioCtx.decodeAudioData(data.slice(0));
     }
 
+    async function loadSample() {
+      stopGame();
+      resetScore();
+      setStatus(t("status_analyzing"));
+      try {
+        const res = await fetch("assets/HaMfin.wav");
+        const buf = await res.arrayBuffer();
+        audioBuffer = await ensureAudioContext().decodeAudioData(buf.slice(0));
+        fileName = "HaM - Haze_zzZ";
+        ui.analyze.disabled = false;
+        ui.bpm.textContent = "-";
+        ui.notes.textContent = "-";
+        ui.keyStat.textContent = "-";
+        setStatus(t("status_loaded", fileName));
+      } catch (err) {
+        setStatus(`Sample load failed: ${err.message || err}`, true);
+      }
+    }
+
     async function doAnalyze() {
       if (!audioBuffer) return;
       stopGame();
@@ -1881,6 +1907,7 @@
     ui.analyze.addEventListener("click", doAnalyze);
     ui.regen.addEventListener("click", regenChart);
     ui.play.addEventListener("click", startGame);
+    ui.sample.addEventListener("click", loadSample);
 
     window.addEventListener("keydown", (e) => {
       const lane = keyMap[e.key.toLowerCase()];
