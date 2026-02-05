@@ -402,6 +402,21 @@
       </div>
 
       <div class="group">
+        <div class="row">
+          <label class="muted" for="midiMode" data-i18n="label_midi_mode">MIDI 模式</label>
+          <span id="midiModeText" class="muted">自动</span>
+        </div>
+        <select id="midiMode">
+          <option value="auto">自动（主旋律）</option>
+          <option value="melody">主旋律</option>
+          <option value="melody_harmony">主旋律 + 和声</option>
+          <option value="drums">仅鼓组</option>
+          <option value="drums_plus">鼓组 + 主旋律</option>
+          <option value="all">全部</option>
+        </select>
+      </div>
+
+      <div class="group">
         <button id="sampleBtn" class="secondary" data-i18n="btn_sample">示例歌曲：HaM - Haze_zzZ</button>
       </div>
 
@@ -561,6 +576,8 @@
     const ui = {
       file: document.getElementById("audioFile"),
       midi: document.getElementById("midiFile"),
+      midiMode: document.getElementById("midiMode"),
+      midiModeText: document.getElementById("midiModeText"),
       analyze: document.getElementById("analyzeBtn"),
       regen: document.getElementById("regenBtn"),
       play: document.getElementById("playBtn"),
@@ -640,6 +657,7 @@
     let midiTimeSig = null;
     let midiDuration = 0;
     let currentSource = "audio";
+    let midiMode = "auto";
 
     let ctx;
     let audioBuffer = null;
@@ -687,6 +705,7 @@
         subtitle: "上传本地歌曲，自动检测节拍并生成下落音符。音符落到浅灰蓝判定线时按 D / F / J / K。",
         label_audio: "歌曲文件（mp3/wav/m4a）",
         label_midi: "MIDI 文件（.mid/.midi）",
+        label_midi_mode: "MIDI 模式",
         label_density: "谱面密度",
         label_offset: "音符偏移",
         label_focus: "识别模式",
@@ -715,6 +734,12 @@
         status_analyzing: "正在提取打击点…",
         status_loaded: (name) => `已加载《${name}》，点击“分析并生成谱面”。`,
         status_midi_loaded: (name) => `已加载 MIDI《${name}》，点击“分析并生成谱面”。`,
+        midi_auto: "自动（主旋律）",
+        midi_melody: "主旋律",
+        midi_melody_harmony: "主旋律 + 和声",
+        midi_drums: "仅鼓组",
+        midi_drums_plus: "鼓组 + 主旋律",
+        midi_all: "全部",
         status_ready: (name) => `已为《${name}》生成谱面，可直接开始游戏。`,
         status_none: "没有检测到足够的打击点，请提高谱面密度或换首节奏更明显的歌。",
         status_regen: (d) => `已按 ${d}x 密度重建谱面。`,
@@ -758,6 +783,7 @@
         subtitle: "Upload audio to auto‑generate falling notes. Hit at the judgment line with D / F / J / K.",
         label_audio: "Audio file (mp3/wav/m4a)",
         label_midi: "MIDI file (.mid/.midi)",
+        label_midi_mode: "MIDI Mode",
         label_density: "Chart Density",
         label_offset: "Note Offset",
         label_focus: "Detection Mode",
@@ -786,6 +812,12 @@
         status_analyzing: "Analyzing onsets…",
         status_loaded: (name) => `Loaded “${name}”. Click Analyze.`,
         status_midi_loaded: (name) => `MIDI loaded: “${name}”. Click Analyze.`,
+        midi_auto: "Auto (Melody)",
+        midi_melody: "Melody",
+        midi_melody_harmony: "Melody + Harmony",
+        midi_drums: "Drums only",
+        midi_drums_plus: "Drums + Melody",
+        midi_all: "All",
         status_ready: (name) => `Chart ready for “${name}”.`,
         status_none: "Not enough onsets detected. Increase density or try another track.",
         status_regen: (d) => `Regenerated at ${d}x density.`,
@@ -856,6 +888,18 @@
       Array.from(ui.laneCount.options).forEach((opt) => {
         opt.textContent = t("lane_keys", opt.value);
       });
+      const midiLabels = {
+        auto: t("midi_auto"),
+        melody: t("midi_melody"),
+        melody_harmony: t("midi_melody_harmony"),
+        drums: t("midi_drums"),
+        drums_plus: t("midi_drums_plus"),
+        all: t("midi_all")
+      };
+      Array.from(ui.midiMode.options).forEach((opt) => {
+        opt.textContent = midiLabels[opt.value] || opt.value;
+      });
+      ui.midiModeText.textContent = midiLabels[midiMode] || t("midi_auto");
       ui.focusText.textContent = focusLabels[focusMode] || t("focus_mix");
       ui.beatText.textContent = beatTrack ? t("beat_on") : t("beat_off");
       ui.enhanceText.textContent = enhanceMode ? t("enhance_on") : t("enhance_off");
@@ -1415,10 +1459,11 @@
             continue;
           }
           const type = status & 0xf0;
+          const channel = status & 0x0f;
           const data1 = firstData !== null ? firstData : data.getUint8(idx++);
           const data2 = (type === 0xc0 || type === 0xd0) ? null : data.getUint8(idx++);
           if (type === 0x90 && data2 !== null && data2 > 0) {
-            noteOns.push({ tick, note: data1, vel: data2 });
+            noteOns.push({ tick, note: data1, vel: data2, ch: channel });
           }
         }
       }
@@ -1502,6 +1547,45 @@
         }
       }
       return notes;
+    }
+
+    function filterMidiOnsets(onsets, mode) {
+      if (!onsets || !onsets.length) return [];
+      const byChannel = new Map();
+      for (const o of onsets) {
+        const ch = o.ch ?? 0;
+        if (!byChannel.has(ch)) byChannel.set(ch, []);
+        byChannel.get(ch).push(o);
+      }
+      const counts = Array.from(byChannel.entries()).map(([ch, list]) => ({ ch, count: list.length }));
+      counts.sort((a, b) => b.count - a.count);
+      const drumCh = 9;
+      const topMelody = counts.find((c) => c.ch !== drumCh) || counts[0];
+      const secondMelody = counts.filter((c) => c.ch !== drumCh)[1];
+      const pick = (chs) => {
+        const filtered = [];
+        for (const o of onsets) if (chs.has(o.ch ?? 0)) filtered.push(o);
+        return filtered;
+      };
+      if (mode === "drums") return pick(new Set([drumCh]));
+      if (mode === "drums_plus") {
+        const set = new Set([drumCh]);
+        if (topMelody) set.add(topMelody.ch);
+        return pick(set);
+      }
+      if (mode === "melody") return pick(new Set([topMelody?.ch ?? 0]));
+      if (mode === "melody_harmony") {
+        const set = new Set([topMelody?.ch ?? 0]);
+        if (secondMelody) set.add(secondMelody.ch);
+        return pick(set);
+      }
+      if (mode === "auto") {
+        const set = new Set([topMelody?.ch ?? 0]);
+        const drumCount = counts.find((c) => c.ch === drumCh)?.count || 0;
+        if (drumCount > (topMelody?.count || 0) * 0.35) set.add(drumCh);
+        return pick(set);
+      }
+      return onsets;
     }
 
     function estimateBpmFromOnsets(onsets) {
@@ -2106,7 +2190,7 @@
       await new Promise((r) => setTimeout(r, 30));
       if (currentSource === "midi" && midiOnsets) {
         estimatedBpm = midiBpm || 120;
-        baseOnsets = midiOnsets;
+        baseOnsets = filterMidiOnsets(midiOnsets, midiMode);
         if (midiTimeSig && (["4/4", "3/4", "5/4", "7/8", "6/8", "9/8", "12/8"].includes(midiTimeSig))) {
           timeSig = midiTimeSig;
         }
@@ -2380,8 +2464,17 @@
         ui.keyStat.textContent = "-";
         ui.hold.textContent = "0";
         ui.chord.textContent = "0";
+        ui.midiModeText.textContent = t(`midi_${midiMode}`) || t("midi_auto");
       } catch (err) {
         setStatus(`MIDI 读取失败：${err.message || err}`, true);
+      }
+    });
+
+    ui.midiMode.addEventListener("change", () => {
+      midiMode = ui.midiMode.value;
+      ui.midiModeText.textContent = t(`midi_${midiMode}`) || t("midi_auto");
+      if (currentSource === "midi" && midiOnsets) {
+        doAnalyze();
       }
     });
 
