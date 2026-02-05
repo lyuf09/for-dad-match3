@@ -600,7 +600,13 @@
       6: ["a", "s", "d", "j", "k", "l"],
       8: ["a", "s", "d", "f", "j", "k", "l", ";"]
     };
-    const laneBaseColors = ["#c2ccd6", "#9aa7b6", "#7a8898", "#5e6c7c", "#4a5868", "#384655"];
+    const tonePalette = [
+      { hue: 206, sat: 16, light: 72 },
+      { hue: 212, sat: 18, light: 64 },
+      { hue: 220, sat: 12, light: 78 },
+      { hue: 198, sat: 14, light: 68 },
+      { hue: 215, sat: 10, light: 82 }
+    ];
     let keyMap = {};
     let laneCount = 4;
     let hitWindow = 0.13;
@@ -900,8 +906,18 @@
       ui.difficultyText.textContent = preset.label;
     }
 
+    function toneColor() {
+      const base = tonePalette[Math.floor(Math.random() * tonePalette.length)];
+      const hue = base.hue + (Math.random() * 6 - 3);
+      const sat = Math.min(24, Math.max(6, base.sat + (Math.random() * 6 - 3)));
+      const light = Math.min(90, Math.max(50, base.light + (Math.random() * 8 - 4)));
+      return `hsl(${hue.toFixed(1)}, ${sat.toFixed(1)}%, ${light.toFixed(1)}%)`;
+    }
+
     function laneColor(index) {
-      return laneBaseColors[index % laneBaseColors.length];
+      return tonePalette[index % tonePalette.length] ?
+        `hsl(${tonePalette[index % tonePalette.length].hue}, ${tonePalette[index % tonePalette.length].sat}%, ${tonePalette[index % tonePalette.length].light}%)`
+        : "#9aa7b6";
     }
 
     function setStatus(text, error = false) {
@@ -1426,6 +1442,12 @@
       }
 
       const notes = [];
+      const timeColor = new Map();
+      const colorForTime = (t) => {
+        const key = t.toFixed(3);
+        if (!timeColor.has(key)) timeColor.set(key, toneColor());
+        return timeColor.get(key);
+      };
       for (let i = 0; i < quantized.length; i += 1) {
         const n = quantized[i];
         const strong = n.v > maxV * 0.45;
@@ -1433,12 +1455,13 @@
         if (makeChord) {
           lane = (lane + 1) % laneCount;
           const other = (lane + 2) % laneCount;
-          notes.push({ t: n.t, lane, type: "tap" });
-          notes.push({ t: n.t, lane: other, type: "tap" });
+          const c = colorForTime(n.t);
+          notes.push({ t: n.t, lane, type: "tap", color: c });
+          notes.push({ t: n.t, lane: other, type: "tap", color: c });
           continue;
         }
         lane = (lane + 1 + (i % 2)) % laneCount;
-        notes.push({ t: n.t, lane, type: "tap" });
+        notes.push({ t: n.t, lane, type: "tap", color: colorForTime(n.t) });
       }
       return notes.sort((a, b) => a.t - b.t);
     }
@@ -1683,7 +1706,7 @@
         const x = note.lane * laneWidth + 12;
         const w = laneWidth - 24;
         const h = 16;
-        g.fillStyle = laneColor(note.lane);
+        g.fillStyle = note.color || laneColor(note.lane);
         g.fillRect(x, y - h / 2, w, h);
       }
 
