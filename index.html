@@ -299,21 +299,60 @@
       gap: 8px;
     }
 
+    .mobile-toggle {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 4;
+      display: none;
+      padding: 12px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
     @media (max-width: 920px) {
       .app {
         grid-template-columns: 1fr;
       }
       canvas {
-        height: 520px;
+        height: 64vh;
       }
       .controls-grid {
         grid-template-columns: 1fr;
+      }
+      .game-wrap {
+        order: 1;
+      }
+      .left {
+        order: 2;
+      }
+      .mobile-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .left.collapsed .controls-grid,
+      .left.collapsed #status,
+      .left.collapsed .stats {
+        display: none;
+      }
+      .left.collapsed {
+        padding-bottom: 10px;
+      }
+      button,
+      select,
+      input[type="range"] {
+        min-height: 42px;
+      }
+      .key {
+        padding: 10px 6px;
       }
     }
   </style>
 </head>
 <body>
   <div class="logo-bg"><img src="assets/logo.png" alt="" /></div>
+  <button id="mobileToggle" class="mobile-toggle">控制面板</button>
   <div id="guide" class="guide">
     <div class="guide-card">
       <h2 data-i18n="guide_title">使用须知</h2>
@@ -606,6 +645,8 @@
         btn_regen: "按当前密度重新生成",
         btn_play: "开始游戏",
         btn_sample: "示例歌曲：HaM - Haze_zzZ",
+        mobile_open: "控制面板",
+        mobile_close: "关闭面板",
         status_idle: "等待上传歌曲…",
         status_analyzing: "正在提取打击点…",
         status_loaded: (name) => `已加载《${name}》，点击“分析并生成谱面”。`,
@@ -663,6 +704,8 @@
         btn_regen: "Regenerate",
         btn_play: "Start",
         btn_sample: "Sample: HaM - Haze_zzZ",
+        mobile_open: "Controls",
+        mobile_close: "Hide Controls",
         status_idle: "Waiting for audio…",
         status_analyzing: "Analyzing onsets…",
         status_loaded: (name) => `Loaded “${name}”. Click Analyze.`,
@@ -1892,6 +1935,12 @@
     const guide = document.getElementById("guide");
     const guideOk = document.getElementById("guideOk");
     const guideHide = document.getElementById("guideHide");
+    const mobileToggle = document.getElementById("mobileToggle");
+    const leftPanel = document.querySelector(".left");
+    const updateMobileToggle = () => {
+      const isCollapsed = leftPanel.classList.contains("collapsed");
+      mobileToggle.textContent = isCollapsed ? t("mobile_open") : t("mobile_close");
+    };
     const hideGuide = () => {
       guide.style.display = "none";
     };
@@ -1902,6 +1951,10 @@
     guideHide.addEventListener("click", () => {
       localStorage.setItem("hideGuide", "1");
       hideGuide();
+    });
+    mobileToggle.addEventListener("click", () => {
+      leftPanel.classList.toggle("collapsed");
+      updateMobileToggle();
     });
 
     ui.analyze.addEventListener("click", doAnalyze);
@@ -1925,6 +1978,7 @@
       ui.offsetText.textContent = `${ui.offset.value} ms`;
       ui.sfxText.textContent = `${Math.round(sfxVolume * 100)}%`;
       ui.status.textContent = t("status_idle");
+      updateMobileToggle();
     });
 
     buildKeyMap();
@@ -1932,6 +1986,7 @@
     ui.sfxText.textContent = `${Math.round(sfxVolume * 100)}%`;
     applyI18n();
     ui.status.textContent = t("status_idle");
+    updateMobileToggle();
     render(0);
   </script>
 </body>
