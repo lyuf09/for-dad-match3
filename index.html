@@ -1429,14 +1429,7 @@
       for (let i = 0; i < quantized.length; i += 1) {
         const n = quantized[i];
         const strong = n.v > maxV * 0.45;
-        const makeHold = strong && i % 12 === 0;
         const makeChord = strong && i % 8 === 0;
-        if (makeHold) {
-          lane = (lane + 1) % laneCount;
-          const durBeats = i % 24 === 0 ? 2 : 1;
-          notes.push({ t: n.t, end: n.t + beat * durBeats, lane, type: "hold", hit: false, done: false });
-          continue;
-        }
         if (makeChord) {
           lane = (lane + 1) % laneCount;
           const other = (lane + 2) % laneCount;
@@ -1626,47 +1619,7 @@
         }
         for (const n of chunk) merged.push(n);
       }
-      const sorted = merged.sort((a, b) => a.t - b.t);
-      return ensureHoldsAndChords(sorted, bpm);
-    }
-
-    function ensureHoldsAndChords(notes, bpm) {
-      const beat = 60 / bpm;
-      let holdCount = notes.filter((n) => n.type === "hold").length;
-      if (holdCount === 0 && notes.length > 0) {
-        let added = 0;
-        for (let i = 0; i < notes.length && added < 2; i += Math.max(6, Math.floor(notes.length / 8))) {
-          const n = notes[i];
-          if (n.type === "tap") {
-            n.type = "hold";
-            n.end = n.t + beat;
-            n.hit = false;
-            n.done = false;
-            added += 1;
-          }
-        }
-      }
-
-      const timeKey = (t) => t.toFixed(3);
-      const byTime = new Map();
-      for (const n of notes) {
-        const k = timeKey(n.t);
-        byTime.set(k, (byTime.get(k) || 0) + 1);
-      }
-      let chordCount = 0;
-      for (const v of byTime.values()) if (v > 1) chordCount += 1;
-      if (chordCount === 0 && notes.length > 1) {
-        let added = 0;
-        for (let i = 0; i < notes.length && added < 4; i += Math.max(5, Math.floor(notes.length / 10))) {
-          const n = notes[i];
-          if (n.type !== "tap") continue;
-          const other = (n.lane + 2) % laneCount;
-          if (other === n.lane) continue;
-          notes.push({ t: n.t, lane: other, type: "tap" });
-          added += 1;
-        }
-      }
-      return notes.sort((a, b) => a.t - b.t);
+      return merged.sort((a, b) => a.t - b.t);
     }
 
     function render(currentTime = 0) {
@@ -1722,22 +1675,14 @@
 
       for (let i = renderStartIndex; i < chart.length; i += 1) {
         const note = chart[i];
-        if (note.hit && note.type !== "hold") continue;
+        if (note.hit) continue;
         const dt = (note.t + offsetSec) - currentTime;
-        const dtEnd = note.type === "hold" ? (note.end + offsetSec) - currentTime : dt;
+        const dtEnd = dt;
         if (dt > SCROLL_TIME) break;
         let y = judgeY - (dt / SCROLL_TIME) * (height - 40);
         const x = note.lane * laneWidth + 12;
         const w = laneWidth - 24;
         const h = 16;
-        if (note.type === "hold") {
-          const yEnd = judgeY - (dtEnd / SCROLL_TIME) * (height - 40);
-          const top = Math.min(y, yEnd);
-          const height = Math.abs(y - yEnd);
-          g.fillStyle = "rgba(140, 156, 174, 0.35)";
-          g.fillRect(x + w * 0.25, top, w * 0.5, height);
-          if (note.hit && !note.done) y = judgeY;
-        }
         g.fillStyle = laneColor(note.lane);
         g.fillRect(x, y - h / 2, w, h);
       }
@@ -1776,16 +1721,7 @@
         }
         break;
       }
-      for (let lane = 0; lane < activeHolds.length; lane += 1) {
-        const n = activeHolds[lane];
-        if (!n || n.done) continue;
-        if (currentTime - (n.end + offsetSec) > hitWindow) {
-          n.done = true;
-          activeHolds[lane] = null;
-          combo = 0;
-          ui.combo.textContent = "0";
-        }
-      }
+      // no holds
     }
 
     function loop() {
@@ -1827,15 +1763,8 @@
         ui.score.textContent = String(score);
         laneFlash[lane] = t;
         playHitSound(perfect ? "perfect" : "good");
-        if (note.type === "hold") {
-          note.done = false;
-          activeHolds[lane] = note;
-          combo += 1;
-          ui.combo.textContent = String(combo);
-        } else {
-          combo += 1;
-          ui.combo.textContent = String(combo);
-        }
+        combo += 1;
+        ui.combo.textContent = String(combo);
         const laneWidth = gameState.width / laneCount;
         const baseX = lane * laneWidth + laneWidth / 2;
         const baseY = gameState.judgeY - 6;
@@ -1859,33 +1788,7 @@
       }
     }
 
-    function releaseLane(lane) {
-      if (!running) return;
-      const hold = activeHolds[lane];
-      if (!hold) return;
-      const t = ctx.currentTime - startTime;
-      const end = hold.end + offsetSec;
-      if (Math.abs(t - end) <= hitWindow) {
-        hold.done = true;
-        activeHolds[lane] = null;
-        combo += 1;
-        score += 220 + combo * 2;
-        ui.score.textContent = String(score);
-        ui.combo.textContent = String(combo);
-      } else if (t < end - hitWindow) {
-        hold.done = true;
-        activeHolds[lane] = null;
-        combo = 0;
-        ui.combo.textContent = "0";
-      } else {
-        hold.done = true;
-        activeHolds[lane] = null;
-        combo += 1;
-        score += 100 + combo * 2;
-        ui.score.textContent = String(score);
-        ui.combo.textContent = String(combo);
-      }
-    }
+    function releaseLane(lane) {}
 
     async function loadAudio(file) {
       const audioCtx = ensureAudioContext();
@@ -2052,7 +1955,7 @@
       }
       let chordCount = 0;
       for (const v of byTime.values()) if (v > 1) chordCount += 1;
-      ui.hold.textContent = String(holdCount);
+      ui.hold.textContent = "0";
       ui.chord.textContent = String(chordCount);
       if (chart.length === 0) {
         setStatus(t("status_none"), true);
