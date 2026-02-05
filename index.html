@@ -1546,6 +1546,11 @@
           laneCursor += 1;
         }
       }
+      const target = 800;
+      if (notes.length > target) {
+        const ratio = target / notes.length;
+        return notes.filter(() => Math.random() < ratio);
+      }
       return notes;
     }
 
