@@ -536,6 +536,8 @@
         <div class="stat"><span data-i18n="stat_key">调性</span><strong id="keyStat">-</strong></div>
         <div class="stat"><span data-i18n="stat_score">分数</span><strong id="scoreStat">0</strong></div>
         <div class="stat"><span data-i18n="stat_combo">连击</span><strong id="comboStat">0</strong></div>
+        <div class="stat"><span data-i18n="stat_hold">Hold</span><strong id="holdStat">0</strong></div>
+        <div class="stat"><span data-i18n="stat_chord">Chord</span><strong id="chordStat">0</strong></div>
       </div>
     </section>
 
@@ -587,6 +589,8 @@
       notes: document.getElementById("noteStat"),
       score: document.getElementById("scoreStat"),
       combo: document.getElementById("comboStat"),
+      hold: document.getElementById("holdStat"),
+      chord: document.getElementById("chordStat"),
       canvas: document.getElementById("game"),
       keyEls: []
     };
@@ -702,6 +706,8 @@
         stat_key: "调性",
         stat_score: "分数",
         stat_combo: "连击",
+        stat_hold: "Hold",
+        stat_chord: "Chord",
         focus_auto: "自动切换（每4小节）",
         focus_drum: "鼓优先",
         focus_guitar: "吉他优先",
@@ -769,6 +775,8 @@
         stat_key: "Key",
         stat_score: "Score",
         stat_combo: "Combo",
+        stat_hold: "Hold",
+        stat_chord: "Chord",
         focus_auto: "Auto (per 4 bars)",
         focus_drum: "Drum‑focused",
         focus_guitar: "Guitar‑focused",
@@ -1626,32 +1634,30 @@
       const beat = 60 / bpm;
       let holdCount = notes.filter((n) => n.type === "hold").length;
       if (holdCount === 0 && notes.length > 0) {
-        for (let i = 0; i < notes.length; i += Math.max(8, Math.floor(notes.length / 10))) {
+        let added = 0;
+        for (let i = 0; i < notes.length && added < 2; i += Math.max(6, Math.floor(notes.length / 8))) {
           const n = notes[i];
           if (n.type === "tap") {
             n.type = "hold";
             n.end = n.t + beat;
             n.hit = false;
             n.done = false;
-            holdCount += 1;
-            break;
+            added += 1;
           }
         }
       }
 
       const timeKey = (t) => t.toFixed(3);
-      let chordCount = 0;
       const byTime = new Map();
       for (const n of notes) {
         const k = timeKey(n.t);
         byTime.set(k, (byTime.get(k) || 0) + 1);
       }
-      for (const v of byTime.values()) {
-        if (v > 1) chordCount += 1;
-      }
+      let chordCount = 0;
+      for (const v of byTime.values()) if (v > 1) chordCount += 1;
       if (chordCount === 0 && notes.length > 1) {
         let added = 0;
-        for (let i = 0; i < notes.length && added < 3; i += Math.max(6, Math.floor(notes.length / 12))) {
+        for (let i = 0; i < notes.length && added < 4; i += Math.max(5, Math.floor(notes.length / 10))) {
           const n = notes[i];
           if (n.type !== "tap") continue;
           const other = (n.lane + 2) % laneCount;
@@ -1701,20 +1707,24 @@
       g.fillStyle = "rgba(144, 160, 176, 0.28)";
       g.fillRect(0, judgeY - 2, width, 4);
 
-      if (currentTime < lastRenderTime) {
-        renderStartIndex = 0;
-      }
+      if (currentTime < lastRenderTime) renderStartIndex = 0;
       lastRenderTime = currentTime;
+
+      while (renderStartIndex < chart.length) {
+        const n = chart[renderStartIndex];
+        const nEnd = (n.type === "hold" ? n.end : n.t) + offsetSec;
+        if (nEnd < currentTime - 0.4) {
+          renderStartIndex += 1;
+        } else {
+          break;
+        }
+      }
 
       for (let i = renderStartIndex; i < chart.length; i += 1) {
         const note = chart[i];
         if (note.hit && note.type !== "hold") continue;
         const dt = (note.t + offsetSec) - currentTime;
         const dtEnd = note.type === "hold" ? (note.end + offsetSec) - currentTime : dt;
-        if (dtEnd < -0.4) {
-          if (i === renderStartIndex) renderStartIndex += 1;
-          continue;
-        }
         if (dt > SCROLL_TIME) break;
         let y = judgeY - (dt / SCROLL_TIME) * (height - 40);
         const x = note.lane * laneWidth + 12;
@@ -2032,17 +2042,21 @@
 
       ui.bpm.textContent = String(estimatedBpm);
       ui.notes.textContent = String(chart.length);
+      ui.hold.textContent = "0";
+      ui.chord.textContent = "0";
+      const holdCount = chart.filter((n) => n.type === "hold").length;
+      const byTime = new Map();
+      for (const n of chart) {
+        const k = n.t.toFixed(3);
+        byTime.set(k, (byTime.get(k) || 0) + 1);
+      }
+      let chordCount = 0;
+      for (const v of byTime.values()) if (v > 1) chordCount += 1;
+      ui.hold.textContent = String(holdCount);
+      ui.chord.textContent = String(chordCount);
       if (chart.length === 0) {
         setStatus(t("status_none"), true);
       } else {
-        const holdCount = chart.filter((n) => n.type === "hold").length;
-        const byTime = new Map();
-        for (const n of chart) {
-          const k = n.t.toFixed(3);
-          byTime.set(k, (byTime.get(k) || 0) + 1);
-        }
-        let chordCount = 0;
-        for (const v of byTime.values()) if (v > 1) chordCount += 1;
         setStatus(`${t("status_ready", fileName)} (Hold ${holdCount}, Chord ${chordCount})`);
       }
       ui.play.disabled = chart.length === 0;
@@ -2082,6 +2096,8 @@
       }
       for (const n of chart) n.hit = false;
       ui.notes.textContent = String(chart.length);
+      ui.hold.textContent = "0";
+      ui.chord.textContent = "0";
       ui.play.disabled = chart.length === 0;
       ui.pause.disabled = chart.length === 0;
       setStatus(t("status_regen", Number(ui.density.value).toFixed(2)), chart.length === 0);
