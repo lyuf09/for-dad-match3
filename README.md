@@ -33,4 +33,4 @@ MIT
 
 ---
 
-Author: Haze_zzZ
+Author: Fay Lyu (Haze_zzZ)
