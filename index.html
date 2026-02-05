@@ -617,6 +617,8 @@
     let keyLabel = "-";
     let keyBaseFreq = 1760;
     const particles = [];
+    let activeHolds = [];
+    const pressedKeys = new Set();
 
     let ctx;
     let audioBuffer = null;
@@ -838,6 +840,7 @@
         keyMap[k] = i;
       });
       laneFlash = new Array(laneCount).fill(-999);
+      activeHolds = new Array(laneCount).fill(null);
       ui.keyEls = [];
       const keysWrap = document.querySelector(".keys");
       keysWrap.style.gridTemplateColumns = `repeat(${laneCount}, 1fr)`;
@@ -850,9 +853,21 @@
         el.addEventListener("pointerdown", (e) => {
           e.preventDefault();
           const lane = Number(el.dataset.lane);
+          if (pressedKeys.has(`p${lane}`)) return;
+          pressedKeys.add(`p${lane}`);
           el.classList.add("hit");
           setTimeout(() => el.classList.remove("hit"), 80);
           hitLane(lane);
+        });
+        el.addEventListener("pointerup", () => {
+          const lane = Number(el.dataset.lane);
+          pressedKeys.delete(`p${lane}`);
+          releaseLane(lane);
+        });
+        el.addEventListener("pointerleave", () => {
+          const lane = Number(el.dataset.lane);
+          pressedKeys.delete(`p${lane}`);
+          releaseLane(lane);
         });
         keysWrap.appendChild(el);
         ui.keyEls.push(el);
@@ -1403,15 +1418,29 @@
       for (let i = 0; i < quantized.length; i += 1) {
         const n = quantized[i];
         const strong = n.v > maxV * 0.55 && i % 7 === 0;
+        const makeHold = strong && Math.random() < 0.35;
+        if (makeHold) {
+          lane = (lane + 1) % laneCount;
+          const durBeats = Math.random() < 0.5 ? 1 : 2;
+          notes.push({ t: n.t, end: n.t + beat * durBeats, lane, type: "hold" });
+          continue;
+        }
+        if (strong && Math.random() < 0.4) {
+          lane = (lane + 1) % laneCount;
+          const other = (lane + Math.floor(laneCount / 2)) % laneCount;
+          notes.push({ t: n.t, lane, type: "tap" });
+          notes.push({ t: n.t, lane: other, type: "tap" });
+          continue;
+        }
         if (strong && laneCount >= 6) {
           const left = lane % laneCount;
           const right = (left + Math.floor(laneCount / 2)) % laneCount;
-          notes.push({ t: n.t, lane: left });
-          notes.push({ t: n.t, lane: right });
+          notes.push({ t: n.t, lane: left, type: "tap" });
+          notes.push({ t: n.t, lane: right, type: "tap" });
           lane = (lane + 1) % laneCount;
         } else {
           lane = (lane + 1 + (i % 2)) % laneCount;
-          notes.push({ t: n.t, lane });
+          notes.push({ t: n.t, lane, type: "tap" });
         }
       }
       return notes.sort((a, b) => a.t - b.t);
@@ -1642,6 +1671,14 @@
         const x = note.lane * laneWidth + 12;
         const w = laneWidth - 24;
         const h = 16;
+        if (note.type === "hold") {
+          const dtEnd = (note.end + offsetSec) - currentTime;
+          const yEnd = judgeY - (dtEnd / SCROLL_TIME) * (height - 40);
+          const top = Math.min(y, yEnd);
+          const height = Math.abs(y - yEnd);
+          g.fillStyle = "rgba(120, 140, 158, 0.35)";
+          g.fillRect(x + w * 0.25, top, w * 0.5, height);
+        }
         g.fillStyle = laneColor(note.lane);
         g.fillRect(x, y - h / 2, w, h);
       }
@@ -1673,12 +1710,24 @@
         }
         if (currentTime - (n.t + offsetSec) > hitWindow) {
           n.hit = true;
+          n.done = true;
           combo = 0;
           ui.combo.textContent = "0";
           nextMissIndex += 1;
           continue;
         }
         break;
+      }
+      for (const n of chart) {
+        if (n.type !== "hold" || !n.hit || n.done) continue;
+        if (currentTime - (n.end + offsetSec) > hitWindow) {
+          n.done = true;
+          if (activeHolds[n.lane] === n) activeHolds[n.lane] = null;
+          combo += 1;
+          score += 220 + combo * 2;
+          ui.score.textContent = String(score);
+          ui.combo.textContent = String(combo);
+        }
       }
     }
 
@@ -1712,7 +1761,8 @@
       }
 
       if (bestIndex >= 0 && bestDelta <= hitWindow) {
-        chart[bestIndex].hit = true;
+        const note = chart[bestIndex];
+        note.hit = true;
         combo += 1;
         const perfect = bestDelta <= perfectWindow;
         const gain = perfect ? 300 : 180;
@@ -1721,6 +1771,10 @@
         ui.combo.textContent = String(combo);
         laneFlash[lane] = t;
         playHitSound(perfect ? "perfect" : "good");
+        if (note.type === "hold") {
+          note.done = false;
+          activeHolds[lane] = note;
+        }
         const laneWidth = gameState.width / laneCount;
         const baseX = lane * laneWidth + laneWidth / 2;
         const baseY = gameState.judgeY - 6;
@@ -1741,6 +1795,34 @@
       } else {
         combo = 0;
         ui.combo.textContent = "0";
+      }
+    }
+
+    function releaseLane(lane) {
+      if (!running) return;
+      const hold = activeHolds[lane];
+      if (!hold) return;
+      const t = ctx.currentTime - startTime;
+      const end = hold.end + offsetSec;
+      if (Math.abs(t - end) <= hitWindow) {
+        hold.done = true;
+        activeHolds[lane] = null;
+        combo += 1;
+        score += 220 + combo * 2;
+        ui.score.textContent = String(score);
+        ui.combo.textContent = String(combo);
+      } else if (t < end - hitWindow) {
+        hold.done = true;
+        activeHolds[lane] = null;
+        combo = 0;
+        ui.combo.textContent = "0";
+      } else {
+        hold.done = true;
+        activeHolds[lane] = null;
+        combo += 1;
+        score += 100 + combo * 2;
+        ui.score.textContent = String(score);
+        ui.combo.textContent = String(combo);
       }
     }
 
@@ -2129,9 +2211,18 @@
     window.addEventListener("keydown", (e) => {
       const lane = keyMap[e.key.toLowerCase()];
       if (lane === undefined) return;
+      if (pressedKeys.has(e.key.toLowerCase())) return;
+      pressedKeys.add(e.key.toLowerCase());
       ui.keyEls[lane].classList.add("hit");
       setTimeout(() => ui.keyEls[lane].classList.remove("hit"), 80);
       hitLane(lane);
+    });
+
+    window.addEventListener("keyup", (e) => {
+      const lane = keyMap[e.key.toLowerCase()];
+      if (lane === undefined) return;
+      pressedKeys.delete(e.key.toLowerCase());
+      releaseLane(lane);
     });
 
     const langToggle = document.getElementById("langToggle");
