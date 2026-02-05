@@ -601,11 +601,11 @@
       8: ["a", "s", "d", "f", "j", "k", "l", ";"]
     };
     const tonePalette = [
-      { hue: 206, sat: 16, light: 72 },
-      { hue: 212, sat: 18, light: 64 },
-      { hue: 220, sat: 12, light: 78 },
-      { hue: 198, sat: 14, light: 68 },
-      { hue: 215, sat: 10, light: 82 }
+      { hue: 195, sat: 18, light: 76 },
+      { hue: 205, sat: 22, light: 70 },
+      { hue: 215, sat: 26, light: 64 },
+      { hue: 228, sat: 18, light: 58 },
+      { hue: 238, sat: 14, light: 74 }
     ];
     let keyMap = {};
     let laneCount = 4;
@@ -908,9 +908,9 @@
 
     function toneColor() {
       const base = tonePalette[Math.floor(Math.random() * tonePalette.length)];
-      const hue = base.hue + (Math.random() * 6 - 3);
-      const sat = Math.min(24, Math.max(6, base.sat + (Math.random() * 6 - 3)));
-      const light = Math.min(90, Math.max(50, base.light + (Math.random() * 8 - 4)));
+      const hue = base.hue + (Math.random() * 10 - 5);
+      const sat = Math.min(32, Math.max(10, base.sat + (Math.random() * 10 - 5)));
+      const light = Math.min(88, Math.max(52, base.light + (Math.random() * 12 - 6)));
       return `hsl(${hue.toFixed(1)}, ${sat.toFixed(1)}%, ${light.toFixed(1)}%)`;
     }
 
