@@ -596,7 +596,7 @@
       6: ["a", "s", "d", "j", "k", "l"],
       8: ["a", "s", "d", "f", "j", "k", "l", ";"]
     };
-    const laneBaseColors = ["#475463", "#4c5968", "#526070", "#586676", "#5c6a7a", "#667382"];
+    const laneBaseColors = ["#c2ccd6", "#9aa7b6", "#7a8898", "#5e6c7c", "#4a5868", "#384655"];
     let keyMap = {};
     let laneCount = 4;
     let hitWindow = 0.13;
@@ -1676,7 +1676,7 @@
           const yEnd = judgeY - (dtEnd / SCROLL_TIME) * (height - 40);
           const top = Math.min(y, yEnd);
           const height = Math.abs(y - yEnd);
-          g.fillStyle = "rgba(120, 140, 158, 0.35)";
+          g.fillStyle = "rgba(140, 156, 174, 0.35)";
           g.fillRect(x + w * 0.25, top, w * 0.5, height);
         }
         g.fillStyle = laneColor(note.lane);
