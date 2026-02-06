@@ -657,7 +657,7 @@
     let difficulty = "normal";
     let enhanceMode = true;
     let laneFlash = [];
-    const FLASH_DURATION = 0.24;
+    const FLASH_DURATION = 0.2;
     let sfxVolume = 0.8;
     let keyLabel = "-";
     let keyBaseFreq = 1760;
@@ -2348,12 +2348,23 @@
         const flashAge = currentTime - laneFlash[lane];
         if (flashAge >= 0 && flashAge < FLASH_DURATION) {
           const alpha = 1 - flashAge / FLASH_DURATION;
-          g.fillStyle = `rgba(176, 188, 206, ${0.42 * alpha})`;
-          g.fillRect(lane * laneWidth, 0, laneWidth, height);
-          g.fillStyle = `rgba(246, 250, 255, ${0.42 * alpha})`;
-          g.fillRect(lane * laneWidth, judgeY - 14, laneWidth, 28);
-          g.fillStyle = `rgba(255, 232, 176, ${0.2 * alpha})`;
-          g.fillRect(lane * laneWidth, judgeY - 54, laneWidth, 108);
+          const x0 = lane * laneWidth;
+          const laneGrad = g.createLinearGradient(0, 0, 0, height);
+          laneGrad.addColorStop(0, `rgba(0,0,0,0)`);
+          laneGrad.addColorStop(0.58, `rgba(206, 220, 236, ${0.06 * alpha})`);
+          laneGrad.addColorStop(0.88, `rgba(206, 220, 236, ${0.14 * alpha})`);
+          laneGrad.addColorStop(1, `rgba(0,0,0,0)`);
+          g.fillStyle = laneGrad;
+          g.fillRect(x0, 0, laneWidth, height);
+
+          const judgeGrad = g.createLinearGradient(0, judgeY - 34, 0, judgeY + 34);
+          judgeGrad.addColorStop(0, `rgba(0,0,0,0)`);
+          judgeGrad.addColorStop(0.32, `rgba(255, 242, 206, ${0.08 * alpha})`);
+          judgeGrad.addColorStop(0.5, `rgba(242, 248, 255, ${0.24 * alpha})`);
+          judgeGrad.addColorStop(0.68, `rgba(255, 242, 206, ${0.08 * alpha})`);
+          judgeGrad.addColorStop(1, `rgba(0,0,0,0)`);
+          g.fillStyle = judgeGrad;
+          g.fillRect(x0, judgeY - 34, laneWidth, 68);
         }
       }
 
@@ -2427,23 +2438,38 @@
         if (p.kind === "ring") {
           const rr = p.r + age * (p.expand || 100);
           g.strokeStyle = p.tint === "gold"
-            ? `rgba(255, 228, 156, ${0.52 * alpha})`
-            : `rgba(238, 246, 255, ${0.52 * alpha})`;
-          g.lineWidth = 1.5 + alpha * 2.5;
+            ? `rgba(255, 228, 172, ${0.34 * alpha})`
+            : `rgba(240, 246, 255, ${0.34 * alpha})`;
+          g.lineWidth = 0.9 + alpha * 1.2;
           g.beginPath();
           g.arc(px, py, rr, 0, Math.PI * 2);
           g.stroke();
         } else {
           const gold = p.tint === "gold";
-          g.shadowBlur = 20;
+          const rr = p.r * (0.95 + 0.55 * alpha);
+          const grad = g.createRadialGradient(px, py, 0, px, py, rr * 2.4);
+          if (gold) {
+            grad.addColorStop(0, `rgba(255, 247, 228, ${0.92 * alpha})`);
+            grad.addColorStop(0.32, `rgba(255, 226, 166, ${0.56 * alpha})`);
+            grad.addColorStop(1, `rgba(255, 210, 120, 0)`);
+          } else {
+            grad.addColorStop(0, `rgba(255, 255, 255, ${0.95 * alpha})`);
+            grad.addColorStop(0.34, `rgba(228, 242, 255, ${0.56 * alpha})`);
+            grad.addColorStop(1, `rgba(196, 220, 242, 0)`);
+          }
+          g.shadowBlur = 10;
           g.shadowColor = gold
-            ? `rgba(255, 210, 120, ${0.92 * alpha})`
-            : `rgba(232, 244, 255, ${0.92 * alpha})`;
-          g.fillStyle = gold
-            ? `rgba(255, 228, 166, ${0.82 * alpha})`
-            : `rgba(244, 249, 255, ${0.84 * alpha})`;
+            ? `rgba(255, 218, 148, ${0.45 * alpha})`
+            : `rgba(230, 242, 255, ${0.45 * alpha})`;
+          g.fillStyle = grad;
           g.beginPath();
-          g.arc(px, py, p.r * (0.8 + 0.9 * alpha), 0, Math.PI * 2);
+          g.arc(px, py, rr * 2.4, 0, Math.PI * 2);
+          g.fill();
+          g.fillStyle = gold
+            ? `rgba(255, 244, 220, ${0.72 * alpha})`
+            : `rgba(252, 255, 255, ${0.74 * alpha})`;
+          g.beginPath();
+          g.arc(px, py, rr * 0.78, 0, Math.PI * 2);
           g.fill();
           g.shadowBlur = 0;
         }
@@ -2517,20 +2543,20 @@
       const laneWidth = gameState.width / laneCount;
       const baseX = lane * laneWidth + laneWidth / 2;
       const baseY = gameState.judgeY - 6;
-      const count = perfect ? 36 : 26;
+      const count = perfect ? 24 : 16;
       for (let i = 0; i < count; i += 1) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = (Math.random() * 95 + 70) * (perfect ? 1.15 : 1.02);
-        const tint = Math.random() < 0.46 ? "gold" : "white";
+        const speed = (Math.random() * 78 + 58) * (perfect ? 1.08 : 1);
+        const tint = Math.random() < 0.34 ? "gold" : "white";
         particles.push({
           x: baseX + (Math.random() * 16 - 8),
           y: baseY + (Math.random() * 6 - 3),
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed - 40,
-          r: Math.random() * 2.6 + 1.2,
+          r: Math.random() * 1.7 + 0.9,
           tint,
           t,
-          life: 0.44 + Math.random() * 0.2
+          life: 0.32 + Math.random() * 0.14
         });
       }
       particles.push({
@@ -2540,10 +2566,10 @@
         y: baseY,
         vx: 0,
         vy: 0,
-        r: perfect ? 14 : 11,
-        expand: perfect ? 165 : 135,
+        r: perfect ? 9 : 7,
+        expand: perfect ? 120 : 104,
         t,
-        life: perfect ? 0.28 : 0.24
+        life: perfect ? 0.2 : 0.17
       });
       particles.push({
         kind: "ring",
@@ -2552,10 +2578,10 @@
         y: baseY,
         vx: 0,
         vy: 0,
-        r: perfect ? 10 : 8,
-        expand: perfect ? 130 : 108,
+        r: perfect ? 7 : 6,
+        expand: perfect ? 96 : 82,
         t: t + 0.01,
-        life: perfect ? 0.24 : 0.2
+        life: perfect ? 0.17 : 0.15
       });
     }
 
@@ -2563,18 +2589,18 @@
       const laneWidth = gameState.width / laneCount;
       const x = lane * laneWidth + laneWidth / 2;
       const y = gameState.judgeY - 6;
-      for (let i = 0; i < 6; i += 1) {
+      for (let i = 0; i < 4; i += 1) {
         const angle = (Math.random() - 0.5) * Math.PI;
-        const speed = 28 + Math.random() * 32;
+        const speed = 22 + Math.random() * 24;
         particles.push({
           x: x + (Math.random() * 10 - 5),
           y: y + (Math.random() * 4 - 2),
           vx: Math.cos(angle) * speed,
           vy: -Math.abs(Math.sin(angle) * speed) - 12,
-          r: 1.2 + Math.random() * 1.7,
-          tint: Math.random() < 0.42 ? "gold" : "white",
+          r: 0.9 + Math.random() * 1.1,
+          tint: Math.random() < 0.3 ? "gold" : "white",
           t,
-          life: 0.2 + Math.random() * 0.12
+          life: 0.16 + Math.random() * 0.09
         });
       }
     }
