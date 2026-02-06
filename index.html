@@ -6,18 +6,19 @@
   <title>Metalcore Piano Rhythm</title>
   <style>
     :root {
-      --bg: #0b0d11;
-      --panel: #13161b;
-      --line: #2f343b;
-      --accent: #4b5f7a;
-      --accent-2: #8ea0b2;
-      --text: #e3e7ec;
-      --muted: #9da6b0;
+      --bg: #090b0f;
+      --panel: #11141a;
+      --line: rgba(226, 236, 248, 0.13);
+      --line-soft: rgba(226, 236, 248, 0.07);
+      --accent: #b7c4d3;
+      --accent-2: #f2d9a2;
+      --text: #eef3f9;
+      --muted: #9ea9b6;
       --danger: #e06c75;
-      --lane-1: #3f4c5c;
-      --lane-2: #465362;
-      --lane-3: #4c5969;
-      --lane-4: #536171;
+      --lane-1: #3c4858;
+      --lane-2: #435061;
+      --lane-3: #4a5768;
+      --lane-4: #516070;
     }
 
     * {
@@ -26,10 +27,10 @@
 
     body {
       margin: 0;
-      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: "Avenir Next", "SF Pro Display", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
       background:
-        radial-gradient(circle at 20% 10%, #1b2129 0%, transparent 42%),
-        radial-gradient(circle at 80% 80%, #11161d 0%, transparent 38%),
+        radial-gradient(80vmax 60vmax at 12% -10%, rgba(246, 234, 200, 0.07), transparent 56%),
+        radial-gradient(60vmax 44vmax at 84% 100%, rgba(164, 184, 210, 0.08), transparent 64%),
         var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -44,10 +45,10 @@
       position: fixed;
       inset: 0;
       background:
-        linear-gradient(120deg, rgba(255, 255, 255, 0.03), transparent 30%),
-        linear-gradient(240deg, rgba(255, 255, 255, 0.025), transparent 28%);
+        linear-gradient(120deg, rgba(255, 255, 255, 0.05), transparent 24%),
+        linear-gradient(240deg, rgba(248, 229, 188, 0.04), transparent 30%);
       pointer-events: none;
-      opacity: 0.7;
+      opacity: 0.62;
     }
 
     .app {
@@ -58,14 +59,17 @@
     }
 
     .panel {
-      background: linear-gradient(180deg, rgba(20, 23, 29, 0.68), rgba(16, 18, 23, 0.66));
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 14px;
-      padding: 14px;
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0) 26%),
+        linear-gradient(180deg, rgba(18, 22, 30, 0.82), rgba(12, 15, 21, 0.8));
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
       box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(10px);
+        0 26px 56px rgba(0, 0, 0, 0.46),
+        0 4px 16px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(14px);
     }
 
     .left {
@@ -82,21 +86,23 @@
 
     h1 {
       margin: 0;
-      font-size: 20px;
-      letter-spacing: 0.4px;
+      font-size: 24px;
+      letter-spacing: 0.75px;
+      font-weight: 750;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     p {
       margin: 0;
       color: var(--muted);
-      line-height: 1.45;
+      line-height: 1.5;
       font-size: 13px;
     }
 
     .group {
       display: grid;
       gap: 8px;
-      border-top: 1px solid var(--line);
+      border-top: 1px solid var(--line-soft);
       padding-top: 10px;
     }
 
@@ -123,15 +129,34 @@
     input[type="file"] {
       font-size: 12px;
       color: var(--muted);
+      border: 1px solid var(--line-soft);
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: rgba(19, 24, 32, 0.44);
+    }
+
+    input[type="file"]::file-selector-button {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: linear-gradient(180deg, rgba(238, 246, 255, 0.24), rgba(132, 150, 170, 0.2));
+      color: #f6f9fe;
+      border-radius: 9px;
+      padding: 7px 10px;
+      margin-right: 10px;
+      font-weight: 650;
+      cursor: pointer;
     }
 
     select {
-      background: #11161d;
+      background:
+        linear-gradient(180deg, rgba(32, 39, 50, 0.55), rgba(17, 22, 29, 0.55));
       color: var(--text);
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 8px 10px;
+      border-radius: 12px;
+      padding: 9px 11px;
       font-size: 12px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 8px 18px rgba(0, 0, 0, 0.2);
     }
 
     input[type="checkbox"] {
@@ -142,18 +167,34 @@
     }
 
     button {
-      border: 0;
-      background: linear-gradient(180deg, #5a6a82, #465565);
-      color: #fff;
-      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background:
+        linear-gradient(180deg, rgba(232, 240, 250, 0.28), rgba(157, 176, 198, 0.2)),
+        linear-gradient(180deg, #2f3a49, #232c37);
+      color: #f8fbff;
+      border-radius: 12px;
       padding: 10px 12px;
       font-weight: 700;
+      letter-spacing: 0.25px;
       cursor: pointer;
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+      box-shadow:
+        0 10px 18px rgba(0, 0, 0, 0.36),
+        inset 0 1px 0 rgba(255, 255, 255, 0.24);
+      transition: transform 0.16s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     }
 
     button.secondary {
-      background: linear-gradient(180deg, #2f3742, #252b33);
+      background:
+        linear-gradient(180deg, rgba(220, 230, 242, 0.12), rgba(220, 230, 242, 0.06)),
+        linear-gradient(180deg, #1f2732, #1a2028);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, 0.26);
+      box-shadow:
+        0 14px 24px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
     }
 
     button:disabled {
@@ -162,9 +203,41 @@
     }
 
     #status {
-      color: var(--muted);
+      color: rgba(228, 238, 249, 0.86);
       font-size: 12px;
       min-height: 32px;
+      letter-spacing: 0.2px;
+    }
+
+    input[type="range"] {
+      appearance: none;
+      height: 7px;
+      border-radius: 999px;
+      background:
+        linear-gradient(90deg, rgba(243, 219, 163, 0.32), rgba(201, 218, 238, 0.32)),
+        rgba(40, 48, 60, 0.75);
+      border: 1px solid var(--line-soft);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 34% 30%, #ffffff, #dfe7f2 56%, #b8c6d6 100%);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: 0 0 0 5px rgba(246, 234, 200, 0.12), 0 4px 10px rgba(0, 0, 0, 0.34);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 34% 30%, #ffffff, #dfe7f2 56%, #b8c6d6 100%);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: 0 0 0 5px rgba(246, 234, 200, 0.12), 0 4px 10px rgba(0, 0, 0, 0.34);
+      cursor: pointer;
     }
 
     .stats {
@@ -175,10 +248,11 @@
     }
 
     .stat {
-      background: rgba(16, 21, 27, 0.4);
+      background: linear-gradient(180deg, rgba(20, 26, 34, 0.64), rgba(12, 15, 21, 0.64));
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 8px;
+      border-radius: 12px;
+      padding: 9px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .stat strong {
@@ -196,12 +270,14 @@
     canvas {
       width: 100%;
       height: 620px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 18px;
+      border: 1px solid var(--line);
       background:
-        linear-gradient(180deg, rgba(20, 24, 30, 0.36), rgba(12, 14, 18, 0.35) 72%);
+        linear-gradient(180deg, rgba(26, 33, 43, 0.43), rgba(14, 18, 25, 0.4) 74%);
       display: block;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      box-shadow:
+        0 22px 40px rgba(0, 0, 0, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .keys {
@@ -213,16 +289,21 @@
       text-align: center;
       padding: 8px;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(17, 22, 29, 0.3);
+      border-radius: 10px;
+      background:
+        linear-gradient(180deg, rgba(248, 252, 255, 0.08), rgba(248, 252, 255, 0.02)),
+        rgba(18, 23, 31, 0.48);
       font-size: 12px;
       color: var(--muted);
       user-select: none;
       touch-action: manipulation;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     .hit {
-      box-shadow: 0 0 0 2px var(--accent-2) inset;
+      box-shadow:
+        0 0 0 1px rgba(255, 245, 220, 0.74) inset,
+        0 0 16px rgba(255, 228, 166, 0.28);
       color: var(--text);
     }
 
@@ -231,11 +312,12 @@
       right: 24px;
       bottom: 18px;
       font-size: 12px;
-      letter-spacing: 0.8px;
-      color: rgba(157, 166, 176, 0.7);
+      letter-spacing: 1.2px;
+      color: rgba(225, 234, 245, 0.76);
       pointer-events: none;
       text-transform: uppercase;
       z-index: 2;
+      text-shadow: 0 1px 8px rgba(255, 237, 196, 0.22);
     }
 
     .logo-bg {
@@ -273,13 +355,15 @@
 
     .guide-card {
       width: min(90vw, 520px);
-      background: linear-gradient(180deg, rgba(20, 23, 29, 0.92), rgba(16, 18, 23, 0.9));
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 26%),
+        linear-gradient(180deg, rgba(20, 23, 29, 0.94), rgba(16, 18, 23, 0.92));
+      border: 1px solid var(--line);
+      border-radius: 16px;
       padding: 18px 18px 16px;
       box-shadow:
-        0 18px 40px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        0 24px 48px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.09);
     }
 
     .guide-card h2 {
