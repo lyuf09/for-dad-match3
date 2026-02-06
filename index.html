@@ -1325,10 +1325,46 @@
       noise.stop(now + noiseDur);
     }
 
+    function startHoldSustain(lane, note) {
+      const audioCtx = ensureAudioContext();
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+      const now = audioCtx.currentTime;
+      const base = note.note
+        ? 440 * Math.pow(2, (note.note - 69) / 12)
+        : (220 + lane * 55);
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(base, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.001, 0.05 * sfxVolume), now + 0.04);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      return { osc, gain };
+    }
+
+    function stopHoldSustain(holdEntry) {
+      if (!holdEntry || !holdEntry.sustain) return;
+      const audioCtx = ensureAudioContext();
+      const now = audioCtx.currentTime;
+      const { osc, gain } = holdEntry.sustain;
+      try {
+        gain.gain.cancelScheduledValues(now);
+        gain.gain.setValueAtTime(Math.max(0.0001, gain.gain.value || 0.02), now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+        osc.stop(now + 0.055);
+      } catch {}
+      holdEntry.sustain = null;
+    }
+
     function resetScore() {
       score = 0;
       combo = 0;
       nextMissIndex = 0;
+      activeHolds = new Array(laneCount).fill(null);
       ui.score.textContent = "0";
       ui.combo.textContent = "0";
     }
@@ -1338,6 +1374,10 @@
       cancelAnimationFrame(rafId);
       paused = false;
       stopMidiSynth();
+      for (const ah of activeHolds) {
+        if (ah) stopHoldSustain(ah);
+      }
+      activeHolds = new Array(laneCount).fill(null);
       if (sourceNode) {
         sourceNode.onended = null;
         sourceNode.stop(0);
@@ -2310,14 +2350,17 @@
         if (note.type === "hold") {
           const endDt = (note.end + offsetSec) - currentTime;
           if (endDt < -hitWindow) continue;
-          const yHead = judgeY - (dt / SCROLL_TIME) * (height - 40);
+          const holdActive = !!(activeHolds[note.lane] && activeHolds[note.lane].note === note);
+          const yHead = holdActive ? judgeY : (judgeY - (dt / SCROLL_TIME) * (height - 40));
           const yTail = judgeY - (endDt / SCROLL_TIME) * (height - 40);
           const y0 = Math.min(yHead, yTail);
           const y1 = Math.max(yHead, yTail);
           g.fillStyle = `rgba(104, 144, 186, 0.18)`;
           g.fillRect(x + 2, y0, w - 4, Math.max(12, y1 - y0));
-          g.fillStyle = color;
-          g.fillRect(x, yHead - 10, w, 16);
+          if (!holdActive) {
+            g.fillStyle = color;
+            g.fillRect(x, yHead - 10, w, 16);
+          }
           // tail cap
           g.fillStyle = `rgba(150, 170, 190, 0.32)`;
           g.fillRect(x + 4, yTail - 8, w - 8, 12);
@@ -2359,6 +2402,8 @@
           if (currentTime - endTime > hitWindow) {
             // Missed tail.
             n.hit = true;
+            const ahMiss = activeHolds[n.lane];
+            if (ahMiss) stopHoldSustain(ahMiss);
             activeHolds[n.lane] = null;
             combo = 0;
             ui.combo.textContent = "0";
@@ -2368,7 +2413,7 @@
           // Auto-complete if still holding past end.
           const ah = activeHolds[n.lane];
           if (ah && ah.note === n && currentTime >= endTime) {
-            finishHoldSuccess(n, true);
+            finishHoldSuccess(n, false);
             nextMissIndex += 1;
             continue;
           }
@@ -2393,6 +2438,14 @@
       if (!running) return;
       lastFrameTs = performance.now();
       const t = ctx.currentTime - startTime;
+      for (let lane = 0; lane < laneCount; lane += 1) {
+        const ah = activeHolds[lane];
+        if (!ah) continue;
+        if (!ah.lastTrail || t - ah.lastTrail > 0.045) {
+          spawnHoldTrail(lane, t);
+          ah.lastTrail = t;
+        }
+      }
       updateMisses(t);
       render(t);
       rafId = requestAnimationFrame(loop);
@@ -2418,7 +2471,28 @@
       }
     }
 
+    function spawnHoldTrail(lane, t) {
+      const laneWidth = gameState.width / laneCount;
+      const x = lane * laneWidth + laneWidth / 2;
+      const y = gameState.judgeY - 6;
+      for (let i = 0; i < 2; i += 1) {
+        const angle = (Math.random() - 0.5) * Math.PI;
+        const speed = 20 + Math.random() * 24;
+        particles.push({
+          x: x + (Math.random() * 10 - 5),
+          y: y + (Math.random() * 4 - 2),
+          vx: Math.cos(angle) * speed,
+          vy: -Math.abs(Math.sin(angle) * speed) - 12,
+          r: 0.9 + Math.random() * 1.2,
+          t,
+          life: 0.16 + Math.random() * 0.08
+        });
+      }
+    }
+
     function finishHoldSuccess(note, silent = false) {
+      const ah = activeHolds[note.lane];
+      if (ah) stopHoldSustain(ah);
       note.hit = true;
       activeHolds[note.lane] = null;
       if (silent) return;
@@ -2456,7 +2530,8 @@
         const note = chart[bestIndex];
         if (note.type === "hold") {
           // start hold
-          activeHolds[lane] = { note, start: t };
+          activeHolds[lane] = { note, start: t, lastTrail: t };
+          activeHolds[lane].sustain = startHoldSustain(lane, note);
           // award head only (once)
           const perfect = bestDelta <= perfectWindow;
           const gain = perfect ? 280 : 180;
@@ -2464,6 +2539,7 @@
           ui.score.textContent = String(score);
           combo += 1;
           ui.combo.textContent = String(combo);
+          laneFlash[lane] = t;
           spawnParticles(lane, perfect, t);
         } else {
           note.hit = true;
@@ -2491,14 +2567,15 @@
       const endTime = ah.note.end + offsetSec;
       if (t >= endTime - hitWindow) {
         finishHoldSuccess(ah.note);
-        nextMissIndex = Math.min(nextMissIndex + 1, chart.length);
       } else {
         // early release -> miss
+        stopHoldSustain(ah);
         ah.note.hit = true;
         activeHolds[lane] = null;
         combo = 0;
         ui.combo.textContent = "0";
       }
+      while (nextMissIndex < chart.length && chart[nextMissIndex].hit) nextMissIndex += 1;
     }
 
     async function loadAudio(file) {
