@@ -2964,11 +2964,7 @@
         currentSource = "midi";
         onsetsByMode = null;
         estimatedBpm = midiBpm || 120;
-        let playbackSource = midiOnsets;
-        if (estimatedBpm < 100) {
-          estimatedBpm *= 2;
-          playbackSource = playbackSource.map((o) => ({ ...o, t: o.t / 2 }));
-        }
+        const playbackSource = midiOnsets;
         midiPlaybackOnsets = selectMidiPlaybackOnsets(playbackSource, midiDuration);
         if (!midiPlaybackOnsets || !midiPlaybackOnsets.length) {
           midiPlaybackOnsets = playbackSource;
