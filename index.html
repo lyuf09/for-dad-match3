@@ -1715,7 +1715,7 @@
         const ratio = target / notes.length;
         return notes.filter(() => Math.random() < ratio);
       }
-      return notes;
+      return injectHolds(notes, bpm);
     }
 
     function filterMidiOnsets(onsets, mode) {
@@ -2008,7 +2008,41 @@
         lane = (lane + 1 + (i % 2)) % laneCount;
         notes.push({ t: n.t, lane, type: "tap", color: colorForTime(n.t) });
       }
-      return notes.sort((a, b) => a.t - b.t);
+      return injectHolds(notes.sort((a, b) => a.t - b.t), bpm);
+    }
+
+    function injectHolds(notes, bpm) {
+      if (!notes.length) return notes;
+      const beat = 60 / bpm;
+      const byLane = new Map();
+      for (const n of notes) {
+        if (!byLane.has(n.lane)) byLane.set(n.lane, []);
+        byLane.get(n.lane).push(n);
+      }
+      const result = [];
+      for (const [lane, list] of byLane.entries()) {
+        list.sort((a, b) => a.t - b.t);
+        for (let i = 0; i < list.length; i += 1) {
+          const cur = list[i];
+          const next = list[i + 1];
+          if (next) {
+            const gap = next.t - cur.t;
+            const wantHold = gap >= beat * 0.7 && gap <= beat * 3.5;
+            if (wantHold && Math.random() < 0.32) {
+              result.push({
+                ...cur,
+                type: "hold",
+                end: next.t - 0.05,
+                color: cur.color
+              });
+              list.splice(i + 1, 1); // consume next as tail
+              continue;
+            }
+          }
+          result.push(cur);
+        }
+      }
+      return result.sort((a, b) => a.t - b.t);
     }
 
     function chooseSegments(modes, barSec) {
@@ -2245,14 +2279,26 @@
         const note = chart[i];
         if (note.hit) continue;
         const dt = (note.t + offsetSec) - currentTime;
-        const dtEnd = dt;
         if (dt > SCROLL_TIME) break;
-        let y = judgeY - (dt / SCROLL_TIME) * (height - 40);
         const x = note.lane * laneWidth + 12;
         const w = laneWidth - 24;
-        const h = 16;
-        g.fillStyle = note.color || laneColor(note.lane);
-        g.fillRect(x, y - h / 2, w, h);
+        const color = note.color || laneColor(note.lane);
+        if (note.type === "hold") {
+          const endDt = (note.end + offsetSec) - currentTime;
+          if (endDt < -hitWindow) continue;
+          const yHead = judgeY - (dt / SCROLL_TIME) * (height - 40);
+          const yTail = judgeY - (endDt / SCROLL_TIME) * (height - 40);
+          const y0 = Math.min(yHead, yTail);
+          const y1 = Math.max(yHead, yTail);
+          g.fillStyle = `rgba(104, 144, 186, 0.18)`;
+          g.fillRect(x + 2, y0, w - 4, Math.max(12, y1 - y0));
+          g.fillStyle = color;
+          g.fillRect(x, yHead - 10, w, 16);
+        } else {
+          const y = judgeY - (dt / SCROLL_TIME) * (height - 40);
+          g.fillStyle = color;
+          g.fillRect(x, y - 8, w, 16);
+        }
       }
 
       // Particle sparkles.
@@ -2289,7 +2335,6 @@
         }
         break;
       }
-      // no holds
     }
 
     function loop() {
