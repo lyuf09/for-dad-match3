@@ -2398,6 +2398,26 @@
       rafId = requestAnimationFrame(loop);
     }
 
+    function spawnParticles(lane, perfect, t) {
+      const laneWidth = gameState.width / laneCount;
+      const baseX = lane * laneWidth + laneWidth / 2;
+      const baseY = gameState.judgeY - 6;
+      const count = perfect ? 14 : 10;
+      for (let i = 0; i < count; i += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (Math.random() * 70 + 50) * (perfect ? 1.1 : 1.0);
+        particles.push({
+          x: baseX + (Math.random() * 16 - 8),
+          y: baseY + (Math.random() * 6 - 3),
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 40,
+          r: Math.random() * 1.8 + 0.8,
+          t,
+          life: 0.35 + Math.random() * 0.15
+        });
+      }
+    }
+
     function finishHoldSuccess(note, silent = false) {
       note.hit = true;
       activeHolds[note.lane] = null;
@@ -2408,6 +2428,7 @@
       score += gain + combo * 2;
       ui.score.textContent = String(score);
       playHitSound("good");
+      spawnParticles(note.lane, false, ctx.currentTime - startTime);
     }
 
     function hitLane(lane) {
@@ -2443,6 +2464,7 @@
           ui.score.textContent = String(score);
           combo += 1;
           ui.combo.textContent = String(combo);
+          spawnParticles(lane, perfect, t);
         } else {
           note.hit = true;
           const perfect = bestDelta <= perfectWindow;
@@ -2453,23 +2475,7 @@
           playHitSound(perfect ? "perfect" : "good");
           combo += 1;
           ui.combo.textContent = String(combo);
-          const laneWidth = gameState.width / laneCount;
-          const baseX = lane * laneWidth + laneWidth / 2;
-          const baseY = gameState.judgeY - 6;
-          const count = perfect ? 14 : 10;
-          for (let i = 0; i < count; i += 1) {
-            const angle = Math.random() * Math.PI * 2;
-            const speed = (Math.random() * 70 + 50) * (perfect ? 1.1 : 1.0);
-            particles.push({
-              x: baseX + (Math.random() * 16 - 8),
-              y: baseY + (Math.random() * 6 - 3),
-              vx: Math.cos(angle) * speed,
-              vy: Math.sin(angle) * speed - 40,
-              r: Math.random() * 1.8 + 0.8,
-              t,
-              life: 0.35 + Math.random() * 0.15
-            });
-          }
+          spawnParticles(lane, perfect, t);
         }
       } else {
         combo = 0;
