@@ -1176,26 +1176,36 @@
 
       const scheduleOne = (o, at) => {
         const freq = 440 * Math.pow(2, (o.note - 69) / 12);
-        const vel = Math.max(0.2, Math.min(1, o.v ?? 0.65));
+        const vel = Math.max(0.18, Math.min(1, o.v ?? 0.7));
         const role = o.role || "melody";
         const gap = o._gap || 0.12;
         const dur = role === "bass"
-          ? Math.max(0.08, Math.min(0.24, gap * 0.92))
-          : Math.max(0.04, Math.min(0.16, gap * 0.7));
+          ? Math.max(0.08, Math.min(0.26, gap * 0.95))
+          : Math.max(0.06, Math.min(0.2, gap * 0.8));
 
         const gain = audioCtx.createGain();
-        const osc = audioCtx.createOscillator();
-        const amp = role === "bass" ? 0.11 : (role === "rhythm" ? 0.085 : 0.095);
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const amp = role === "bass" ? 0.12 : (role === "rhythm" ? 0.095 : 0.11);
         gain.gain.setValueAtTime(0.0001, at);
         gain.gain.exponentialRampToValueAtTime(amp * vel, at + 0.01);
         gain.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-        osc.type = role === "bass" ? "sine" : (role === "rhythm" ? "triangle" : "sine");
-        osc.frequency.setValueAtTime(role === "bass" ? freq * 0.5 : freq, at);
-        osc.connect(gain);
+
+        const baseFreq = role === "bass" ? freq * 0.5 : freq;
+        osc1.type = "sine";
+        osc2.type = "sine";
+        osc1.frequency.setValueAtTime(baseFreq, at);
+        osc2.frequency.setValueAtTime(baseFreq * 2, at);
+        osc2.detune.setValueAtTime(6 * (Math.random() - 0.5), at);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
         gain.connect(midiSynthGain);
-        osc.start(at);
-        osc.stop(at + dur + 0.01);
-        midiSynthNodes.push(osc);
+        osc1.start(at);
+        osc2.start(at);
+        osc1.stop(at + dur + 0.01);
+        osc2.stop(at + dur + 0.01);
+        midiSynthNodes.push(osc1, osc2);
       };
 
       const tick = () => {
@@ -2006,6 +2016,16 @@
         }
       }
       return picked.sort((a, b) => a.t - b.t);
+    }
+
+    function capNotes(notes, maxCount = 800) {
+      if (notes.length <= maxCount) return notes;
+      const stride = Math.ceil(notes.length / maxCount);
+      const capped = [];
+      for (let i = 0; i < notes.length; i += stride) {
+        capped.push(notes[i]);
+      }
+      return capped;
     }
 
     function estimateBpmFromOnsets(onsets) {
@@ -2953,7 +2973,7 @@
           ui.timeSigText.textContent = parsed.label;
         }
         const chartNotes = buildChartFromMidi(baseOnsets, estimatedBpm, Number(ui.density.value));
-        chart = chartNotes;
+        chart = capNotes(chartNotes, 800);
         for (const n of chart) n.hit = false;
         ui.bpm.textContent = String(estimatedBpm);
         ui.notes.textContent = String(chart.length);
@@ -3027,10 +3047,10 @@
           piano: onsetsByMode.piano,
           vocal: onsetsByMode.vocal
         };
-        chart = buildChartAuto(autoModes, estimatedBpm, Number(ui.density.value), beatOffset, beatLock, barSec);
+        chart = capNotes(buildChartAuto(autoModes, estimatedBpm, Number(ui.density.value), beatOffset, beatLock, barSec), 800);
       } else {
         const chosen = onsetsByMode[focusMode] || onsetsByMode.mix;
-        chart = buildChartFromOnsets(chosen, estimatedBpm, Number(ui.density.value), beatOffset, beatLock);
+        chart = capNotes(buildChartFromOnsets(chosen, estimatedBpm, Number(ui.density.value), beatOffset, beatLock), 800);
       }
       for (const n of chart) n.hit = false;
 
