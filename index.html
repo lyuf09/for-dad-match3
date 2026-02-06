@@ -2144,6 +2144,26 @@
           color: a.color
         });
       }
+      holds = result.filter((n) => n.type === "hold").length;
+      const minHoldCount = result.length >= 12 ? 1 : 0;
+      const maxHoldCount = Math.max(minHoldCount, Math.floor(result.length * 0.15));
+      if (holds > maxHoldCount) {
+        const holdIdx = [];
+        for (let i = 0; i < result.length; i += 1) {
+          const n = result[i];
+          if (n.type === "hold") {
+            holdIdx.push({ i, dur: Math.max(0.01, (n.end || n.t) - n.t) });
+          }
+        }
+        holdIdx.sort((a, b) => b.dur - a.dur);
+        const keep = new Set(holdIdx.slice(0, maxHoldCount).map((x) => x.i));
+        for (const h of holdIdx) {
+          if (keep.has(h.i)) continue;
+          const n = result[h.i];
+          n.type = "tap";
+          delete n.end;
+        }
+      }
       return result.sort((a, b) => a.t - b.t);
     }
 
