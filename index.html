@@ -2830,9 +2830,7 @@
           "--canvas-grad-1": "rgba(18, 24, 34, 0.5)",
           "--canvas-grad-2": "rgba(10, 14, 20, 0.46)",
           "--key-grad-1": "rgba(220, 230, 245, 0.08)",
-          "--key-grad-2": "rgba(220, 230, 245, 0.02)",
-          "--logo-filter": "drop-shadow(0 0 34px rgba(255, 255, 255, 0.32)) drop-shadow(0 0 80px rgba(255, 255, 255, 0.18))",
-          "--logo-opacity": 1
+          "--key-grad-2": "rgba(220, 230, 245, 0.02)"
         },
         palette: [
           { hue: 208, sat: 20, light: 74 },
@@ -2847,6 +2845,9 @@
     function applyTheme(name, persist = true) {
       const preset = themePresets[name] || themePresets.silver;
       theme = name in themePresets ? name : "silver";
+      // Default logo glow is white; only Snow overrides to black glow.
+      document.documentElement.style.setProperty("--logo-filter", "drop-shadow(0 0 32px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 72px rgba(255, 255, 255, 0.14))");
+      document.documentElement.style.setProperty("--logo-opacity", "1");
       for (const [key, value] of Object.entries(preset.vars)) {
         document.documentElement.style.setProperty(key, value);
       }
