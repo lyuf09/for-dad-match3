@@ -68,6 +68,7 @@
       display: grid;
       grid-template-columns: 560px 1fr;
       gap: 24px;
+      align-items: start;
     }
 
     .panel {
@@ -88,6 +89,9 @@
       display: grid;
       gap: 12px;
       align-content: start;
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      padding-right: 6px;
     }
 
     .controls-grid {
@@ -279,6 +283,8 @@
       gap: 10px;
       width: min(100%, 980px);
       margin: 0 auto;
+      position: sticky;
+      top: 16px;
     }
 
     canvas {
