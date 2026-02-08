@@ -196,6 +196,29 @@
       gap: 8px;
     }
 
+    .settings {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .settings label {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    select {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
     button {
       width: 100%;
       border: none;
@@ -289,6 +312,19 @@
       <div class="pad" id="pad"></div>
     </div>
 
+    <div class="panel">
+      <div class="settings">
+        <div>
+          <label for="difficulty">难度</label>
+          <select id="difficulty">
+            <option value="easy">简单</option>
+            <option value="normal" selected>普通</option>
+            <option value="hard">困难</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <div class="panel tips" id="tips">
       规则：每行、每列、每个 3×3 小宫都不能重复。点击格子后选数字。
     </div>
@@ -306,6 +342,7 @@
     let puzzle = [];
     let fixed = [];
     let selected = null;
+    let holes = 40;
 
     function shuffle(arr) {
       const copy = [...arr];
@@ -337,9 +374,9 @@
       return grid;
     }
 
-    function makePuzzle(grid, holes = 40) {
+    function makePuzzle(grid, holeCount = 40) {
       const puzzleGrid = grid.map(row => [...row]);
-      let count = holes;
+      let count = holeCount;
       while (count > 0) {
         const r = Math.floor(Math.random() * side);
         const c = Math.floor(Math.random() * side);
@@ -460,7 +497,7 @@
 
     function newGame() {
       solution = generateSolution();
-      puzzle = makePuzzle(solution, 40);
+      puzzle = makePuzzle(solution, holes);
       fixed = puzzle.map(row => row.map(val => val !== 0));
       selected = null;
       setMessage("");
@@ -479,6 +516,13 @@
     document.getElementById("new").addEventListener("click", newGame);
     document.getElementById("check").addEventListener("click", checkErrors);
     document.getElementById("clear").addEventListener("click", () => setNumber(0));
+    document.getElementById("difficulty").addEventListener("change", (event) => {
+      const level = event.target.value;
+      if (level === "easy") holes = 32;
+      else if (level === "hard") holes = 52;
+      else holes = 40;
+      newGame();
+    });
 
     renderPad();
     newGame();

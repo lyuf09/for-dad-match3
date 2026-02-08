@@ -171,6 +171,29 @@
       gap: 8px;
     }
 
+    .settings {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .settings label {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    select {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
     button {
       width: 100%;
       border: none;
@@ -251,6 +274,16 @@
     </div>
 
     <div class="panel">
+      <div class="settings">
+        <div>
+          <label for="difficulty">难度</label>
+          <select id="difficulty">
+            <option value="easy">简单</option>
+            <option value="normal" selected>普通</option>
+            <option value="hard">困难</option>
+          </select>
+        </div>
+      </div>
       <div class="controls">
         <button id="restart">重新开始</button>
         <button id="shuffle" class="secondary">洗牌</button>
@@ -291,9 +324,27 @@
     let pointerId = null;
     let dragStart = null;
     let swapTriggered = false;
+    let paletteSize = colors.length;
 
     function randColor() {
-      return Math.floor(Math.random() * colors.length);
+      return Math.floor(Math.random() * paletteSize);
+    }
+
+    function applyDifficulty() {
+      const level = document.getElementById("difficulty").value;
+      if (level === "easy") {
+        moves = 26;
+        target = 900;
+        paletteSize = 5;
+      } else if (level === "hard") {
+        moves = 18;
+        target = 1500;
+        paletteSize = 6;
+      } else {
+        moves = 22;
+        target = 1200;
+        paletteSize = 6;
+      }
     }
 
     function createEmptyBoard() {
@@ -502,8 +553,7 @@
 
     function resetGame() {
       score = 0;
-      moves = 20;
-      target = 1200;
+      applyDifficulty();
       updateStats();
       setMessage("");
       fillBoard();
@@ -596,6 +646,10 @@
 
     document.getElementById("help").addEventListener("click", () => {
       tipsEl.textContent = "玩法：点击或拖动相邻方块交换，三连即可消除。每次交换消耗一步，连锁消除会有额外加分。";
+    });
+
+    document.getElementById("difficulty").addEventListener("change", () => {
+      resetGame();
     });
 
     resetGame();
