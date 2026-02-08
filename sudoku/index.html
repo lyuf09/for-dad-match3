@@ -120,6 +120,24 @@
       transition: transform 0.12s ease, background 0.12s ease;
     }
 
+    .notes {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 2px;
+      padding: 6px;
+      font-size: clamp(8px, 2.4vw, 11px);
+      color: rgba(255,255,255,0.7);
+    }
+
+    .note {
+      display: grid;
+      place-items: center;
+      opacity: 0.85;
+    }
+
     .cell.given {
       background: rgba(255, 255, 255, 0.15);
       color: #e9f2ff;
@@ -194,6 +212,16 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
+    }
+
+    .toggle {
+      margin-top: 8px;
+      width: 100%;
+    }
+
+    .toggle.active {
+      background: linear-gradient(160deg, #7fd2ff, #5aa9ff);
+      color: #0c1220;
     }
 
     .settings {
@@ -309,6 +337,7 @@
         <button id="check" class="secondary">检查错误</button>
         <button id="clear" class="ghost">清除选中</button>
       </div>
+      <button id="noteMode" class="toggle ghost">备注：关</button>
       <div class="pad" id="pad"></div>
     </div>
 
@@ -329,7 +358,7 @@
     </div>
 
     <div class="panel tips" id="tips">
-      规则：每行、每列、每个 3×3 小宫都不能重复。点击格子后选数字。
+      规则：每行、每列、每个 3×3 小宫都不能重复。点击格子后选数字，备注模式可记录候选数字。
     </div>
   </div>
 
@@ -344,8 +373,10 @@
     let solution = [];
     let puzzle = [];
     let fixed = [];
+    let notes = [];
     let selected = null;
     let holes = 40;
+    let noteMode = false;
 
     function shuffle(arr) {
       const copy = [...arr];
@@ -403,6 +434,16 @@
           if (val !== 0) {
             cell.textContent = val;
             if (fixed[r][c]) cell.classList.add("given");
+          } else if (notes[r][c].size > 0) {
+            const wrap = document.createElement("div");
+            wrap.className = "notes";
+            for (let n = 1; n <= 9; n++) {
+              const span = document.createElement("div");
+              span.className = "note";
+              span.textContent = notes[r][c].has(n) ? n : "";
+              wrap.appendChild(span);
+            }
+            cell.appendChild(wrap);
           }
           boardEl.appendChild(cell);
         }
@@ -467,7 +508,17 @@
       if (!selected) return;
       const { r, c } = selected;
       if (fixed[r][c]) return;
-      puzzle[r][c] = val;
+      if (noteMode) {
+        if (val === 0) {
+          notes[r][c].clear();
+        } else if (puzzle[r][c] === 0) {
+          if (notes[r][c].has(val)) notes[r][c].delete(val);
+          else notes[r][c].add(val);
+        }
+      } else {
+        puzzle[r][c] = val;
+        notes[r][c].clear();
+      }
       renderBoard();
       highlight(r, c);
       checkWin();
@@ -502,6 +553,9 @@
       solution = generateSolution();
       puzzle = makePuzzle(solution, holes);
       fixed = puzzle.map(row => row.map(val => val !== 0));
+      notes = Array.from({ length: side }, () =>
+        Array.from({ length: side }, () => new Set())
+      );
       selected = null;
       setMessage("");
       renderBoard();
@@ -519,6 +573,12 @@
     document.getElementById("new").addEventListener("click", newGame);
     document.getElementById("check").addEventListener("click", checkErrors);
     document.getElementById("clear").addEventListener("click", () => setNumber(0));
+    document.getElementById("noteMode").addEventListener("click", () => {
+      noteMode = !noteMode;
+      const btn = document.getElementById("noteMode");
+      btn.textContent = noteMode ? "备注：开" : "备注：关";
+      btn.classList.toggle("active", noteMode);
+    });
     document.getElementById("difficulty").addEventListener("change", (event) => {
       const level = event.target.value;
       if (level === "easy") holes = 30;
