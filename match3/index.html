@@ -227,6 +227,29 @@
       min-height: 24px;
     }
 
+    .praise {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .praise span {
+      font-size: clamp(20px, 6vw, 36px);
+      font-weight: 800;
+      color: #ffe199;
+      text-shadow: 0 6px 24px rgba(255, 200, 90, 0.55);
+      animation: floatPraise 0.9s ease both;
+    }
+
+    @keyframes floatPraise {
+      0% { transform: translateY(12px) scale(0.9); opacity: 0; }
+      30% { transform: translateY(0) scale(1.02); opacity: 1; }
+      100% { transform: translateY(-10px) scale(1); opacity: 0; }
+    }
+
     .tips {
       color: var(--muted);
       font-size: 12px;
@@ -300,6 +323,7 @@
       点击或拖动两个相邻的方块进行交换，连成三个或更多同色即可消除。
     </div>
   </div>
+  <div class="praise" id="praise"></div>
 
   <script>
     const rows = 8;
@@ -319,6 +343,7 @@
     const targetEl = document.getElementById("target");
     const messageEl = document.getElementById("message");
     const tipsEl = document.getElementById("tips");
+    const praiseEl = document.getElementById("praise");
 
     let board = [];
     let selected = null;
@@ -330,6 +355,16 @@
     let dragStart = null;
     let swapTriggered = false;
     let paletteSize = colors.length;
+    let praiseCooldown = false;
+
+    const praisePool = [
+      "厉害！👍",
+      "不错！👍",
+      "太棒了！",
+      "干得漂亮！",
+      "继续保持！",
+      "连锁消除！"
+    ];
 
     function randColor() {
       return Math.floor(Math.random() * paletteSize);
@@ -422,6 +457,19 @@
 
     function setMessage(text) {
       messageEl.textContent = text || "";
+    }
+
+    function showPraise(text) {
+      if (praiseCooldown) return;
+      praiseCooldown = true;
+      praiseEl.innerHTML = "";
+      const span = document.createElement("span");
+      span.textContent = text;
+      praiseEl.appendChild(span);
+      setTimeout(() => {
+        praiseEl.innerHTML = "";
+        praiseCooldown = false;
+      }, 900);
     }
 
     function clearSelection() {
@@ -534,6 +582,10 @@
         const cleared = applyMatches(matches);
         score += cleared * 20 * chain;
         updateStats();
+        if (cleared >= 4 || chain >= 2) {
+          const text = praisePool[Math.floor(Math.random() * praisePool.length)];
+          showPraise(text);
+        }
         await delay(120);
         dropTiles();
         renderBoard();
@@ -566,6 +618,7 @@
     function checkGame() {
       if (score >= target) {
         setMessage("太棒了！目标完成！");
+        showPraise("胜利！太厉害了！👍");
       } else if (moves <= 0) {
         setMessage("本局结束，再来一次吧！");
       } else {
