@@ -320,6 +320,9 @@
             <option value="easy">简单</option>
             <option value="normal" selected>普通</option>
             <option value="hard">困难</option>
+            <option value="master">大师</option>
+            <option value="hell">地狱</option>
+            <option value="extreme">极限</option>
           </select>
         </div>
       </div>
@@ -518,9 +521,12 @@
     document.getElementById("clear").addEventListener("click", () => setNumber(0));
     document.getElementById("difficulty").addEventListener("change", (event) => {
       const level = event.target.value;
-      if (level === "easy") holes = 32;
-      else if (level === "hard") holes = 52;
-      else holes = 40;
+      if (level === "easy") holes = 30;
+      else if (level === "normal") holes = 40;
+      else if (level === "hard") holes = 50;
+      else if (level === "master") holes = 56;
+      else if (level === "hell") holes = 60;
+      else holes = 64;
       newGame();
     });
 
