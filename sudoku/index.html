@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>数独 - 爸爸的游戏合集</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Rubik:wght@400;600;800&display=swap');
+
+    :root {
+      --bg-1: #0b1320;
+      --bg-2: #1b2a44;
+      --panel: rgba(12, 18, 32, 0.92);
+      --panel-line: rgba(255, 255, 255, 0.12);
+      --text: #eef4ff;
+      --muted: #9fb0c9;
+      --accent: #ffd77a;
+      --danger: #ff8a8a;
+      --shadow: 0 18px 36px rgba(5, 8, 16, 0.55);
+      --cell: min(10.8vw, 48px);
+      --gap: 4px;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Rubik", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background:
+        radial-gradient(60vmax 48vmax at 20% -10%, rgba(255, 225, 165, 0.14), transparent 60%),
+        radial-gradient(50vmax 45vmax at 85% 100%, rgba(125, 170, 255, 0.2), transparent 65%),
+        linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+
+    .app {
+      width: min(980px, 100%);
+      display: grid;
+      gap: 14px;
+    }
+
+    .header {
+      display: grid;
+      gap: 6px;
+      text-align: center;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .back {
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #e7eeff;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "ZCOOL QingKe HuangYou", "Rubik", sans-serif;
+      font-size: clamp(24px, 5vw, 38px);
+      letter-spacing: 1.6px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: clamp(12px, 2.6vw, 14px);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    .board {
+      width: calc(9 * var(--cell) + 8 * var(--gap) + 20px);
+      max-width: 100%;
+      margin: 0;
+      padding: 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      grid-template-columns: repeat(9, var(--cell));
+      gap: var(--gap);
+      justify-content: center;
+      background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+      touch-action: none;
+    }
+
+    .cell {
+      width: var(--cell);
+      height: var(--cell);
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      font-size: clamp(18px, 4.2vw, 22px);
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255,255,255,0.05);
+      box-shadow: inset 0 1px 4px rgba(255,255,255,0.18), 0 6px 12px rgba(0,0,0,0.25);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s ease, background 0.12s ease;
+    }
+
+    .cell.given {
+      background: rgba(255, 255, 255, 0.15);
+      color: #e9f2ff;
+    }
+
+    .cell.selected {
+      outline: 2px solid rgba(255,255,255,0.7);
+      outline-offset: -2px;
+      transform: scale(1.05);
+      background: rgba(255,255,255,0.18);
+    }
+
+    .cell.same {
+      background: rgba(255,255,255,0.14);
+    }
+
+    .cell.error {
+      background: rgba(255, 120, 120, 0.22);
+      color: var(--danger);
+    }
+
+    .grid-lines {
+      position: relative;
+    }
+
+    .grid-lines::before,
+    .grid-lines::after {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      pointer-events: none;
+      border-radius: 12px;
+    }
+
+    .grid-lines::before {
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,0.08),
+        inset 0 0 0 0 rgba(0,0,0,0),
+        inset 0 0 0 0 rgba(0,0,0,0);
+    }
+
+    .grid-lines::after {
+      box-shadow:
+        inset 0 0 0 0 rgba(0,0,0,0),
+        inset 0 0 0 0 rgba(0,0,0,0),
+        inset 0 0 0 0 rgba(0,0,0,0);
+    }
+
+    .board-shell {
+      position: relative;
+      width: fit-content;
+      margin: 0 auto;
+    }
+
+    .strong-lines {
+      position: absolute;
+      inset: 10px;
+      pointer-events: none;
+    }
+
+    .strong-lines span {
+      position: absolute;
+      background: rgba(255,255,255,0.2);
+    }
+
+    .strong-lines .v1 { left: calc((var(--cell) + var(--gap)) * 3 - var(--gap) + 5px); top: 0; bottom: 0; width: 2px; }
+    .strong-lines .v2 { left: calc((var(--cell) + var(--gap)) * 6 - var(--gap) + 5px); top: 0; bottom: 0; width: 2px; }
+    .strong-lines .h1 { top: calc((var(--cell) + var(--gap)) * 3 - var(--gap) + 5px); left: 0; right: 0; height: 2px; }
+    .strong-lines .h2 { top: calc((var(--cell) + var(--gap)) * 6 - var(--gap) + 5px); left: 0; right: 0; height: 2px; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(160deg, #ffd77a, #ffb95f);
+      color: #1b1b1b;
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.28);
+    }
+
+    button.secondary {
+      background: linear-gradient(160deg, #4a638f, #2f3e5f);
+      color: #e7eeff;
+    }
+
+    button.ghost {
+      background: rgba(255,255,255,0.08);
+      color: #dce6ff;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .pad {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .pad button {
+      background: rgba(255,255,255,0.08);
+      color: #e8f0ff;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: none;
+      font-size: 16px;
+    }
+
+    .message {
+      text-align: center;
+      color: var(--accent);
+      font-weight: 700;
+      min-height: 24px;
+    }
+
+    .tips {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      :root { --cell: min(11.5vw, 50px); }
+      .controls { grid-template-columns: 1fr; }
+      .pad { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="header-row">
+        <a class="back" href="../">返回合集</a>
+        <div style="width: 84px;"></div>
+      </div>
+      <h1>数独</h1>
+      <div class="subtitle">点击格子选择数字，支持手机操作</div>
+    </div>
+
+    <div class="panel">
+      <div id="message" class="message"></div>
+      <div class="board-shell">
+        <div class="board grid-lines" id="board"></div>
+        <div class="strong-lines">
+          <span class="v1"></span>
+          <span class="v2"></span>
+          <span class="h1"></span>
+          <span class="h2"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="controls">
+        <button id="new">新游戏</button>
+        <button id="check" class="secondary">检查错误</button>
+        <button id="clear" class="ghost">清除选中</button>
+      </div>
+      <div class="pad" id="pad"></div>
+    </div>
+
+    <div class="panel tips" id="tips">
+      规则：每行、每列、每个 3×3 小宫都不能重复。点击格子后选数字。
+    </div>
+  </div>
+
+  <script>
+    const boardEl = document.getElementById("board");
+    const padEl = document.getElementById("pad");
+    const messageEl = document.getElementById("message");
+
+    const base = 3;
+    const side = base * base;
+
+    let solution = [];
+    let puzzle = [];
+    let fixed = [];
+    let selected = null;
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function pattern(r, c) {
+      return (base * (r % base) + Math.floor(r / base) + c) % side;
+    }
+
+    function generateSolution() {
+      const rBase = Array.from({ length: base }, (_, i) => i);
+      const rows = shuffle(rBase)
+        .flatMap(g => shuffle(rBase).map(r => g * base + r));
+      const cols = shuffle(rBase)
+        .flatMap(g => shuffle(rBase).map(c => g * base + c));
+      const nums = shuffle(Array.from({ length: side }, (_, i) => i + 1));
+
+      const grid = Array.from({ length: side }, () => Array(side).fill(0));
+      for (let r = 0; r < side; r++) {
+        for (let c = 0; c < side; c++) {
+          grid[r][c] = nums[pattern(rows[r], cols[c])];
+        }
+      }
+      return grid;
+    }
+
+    function makePuzzle(grid, holes = 40) {
+      const puzzleGrid = grid.map(row => [...row]);
+      let count = holes;
+      while (count > 0) {
+        const r = Math.floor(Math.random() * side);
+        const c = Math.floor(Math.random() * side);
+        if (puzzleGrid[r][c] !== 0) {
+          puzzleGrid[r][c] = 0;
+          count--;
+        }
+      }
+      return puzzleGrid;
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = "";
+      for (let r = 0; r < side; r++) {
+        for (let c = 0; c < side; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          const val = puzzle[r][c];
+          if (val !== 0) {
+            cell.textContent = val;
+            if (fixed[r][c]) cell.classList.add("given");
+          }
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function renderPad() {
+      padEl.innerHTML = "";
+      for (let n = 1; n <= 9; n++) {
+        const btn = document.createElement("button");
+        btn.textContent = n;
+        btn.addEventListener("click", () => setNumber(n));
+        padEl.appendChild(btn);
+      }
+      const erase = document.createElement("button");
+      erase.textContent = "清除";
+      erase.addEventListener("click", () => setNumber(0));
+      padEl.appendChild(erase);
+    }
+
+    function setMessage(text) {
+      messageEl.textContent = text || "";
+    }
+
+    function clearHighlights() {
+      document.querySelectorAll(".cell").forEach(cell => {
+        cell.classList.remove("selected", "same", "error");
+      });
+    }
+
+    function highlight(r, c) {
+      clearHighlights();
+      const val = puzzle[r][c];
+      document.querySelectorAll(".cell").forEach(cell => {
+        const cr = Number(cell.dataset.row);
+        const cc = Number(cell.dataset.col);
+        if (cr === r && cc === c) cell.classList.add("selected");
+        if (val !== 0 && puzzle[cr][cc] === val) cell.classList.add("same");
+        if (cr === r || cc === c) cell.classList.add("same");
+        if (Math.floor(cr / 3) === Math.floor(r / 3) && Math.floor(cc / 3) === Math.floor(c / 3)) {
+          cell.classList.add("same");
+        }
+      });
+    }
+
+    function isValid(r, c, val) {
+      for (let i = 0; i < side; i++) {
+        if (i !== c && puzzle[r][i] === val) return false;
+        if (i !== r && puzzle[i][c] === val) return false;
+      }
+      const br = Math.floor(r / 3) * 3;
+      const bc = Math.floor(c / 3) * 3;
+      for (let rr = br; rr < br + 3; rr++) {
+        for (let cc = bc; cc < bc + 3; cc++) {
+          if ((rr !== r || cc !== c) && puzzle[rr][cc] === val) return false;
+        }
+      }
+      return true;
+    }
+
+    function setNumber(val) {
+      if (!selected) return;
+      const { r, c } = selected;
+      if (fixed[r][c]) return;
+      puzzle[r][c] = val;
+      renderBoard();
+      highlight(r, c);
+      checkWin();
+    }
+
+    function checkErrors() {
+      let hasError = false;
+      document.querySelectorAll(".cell").forEach(cell => {
+        const r = Number(cell.dataset.row);
+        const c = Number(cell.dataset.col);
+        const val = puzzle[r][c];
+        if (val !== 0 && !isValid(r, c, val)) {
+          cell.classList.add("error");
+          hasError = true;
+        }
+      });
+      setMessage(hasError ? "有重复数字，请检查红色格子" : "看起来没有错误！");
+    }
+
+    function checkWin() {
+      for (let r = 0; r < side; r++) {
+        for (let c = 0; c < side; c++) {
+          if (puzzle[r][c] === 0 || !isValid(r, c, puzzle[r][c])) {
+            return;
+          }
+        }
+      }
+      setMessage("太棒了！数独完成！");
+    }
+
+    function newGame() {
+      solution = generateSolution();
+      puzzle = makePuzzle(solution, 40);
+      fixed = puzzle.map(row => row.map(val => val !== 0));
+      selected = null;
+      setMessage("");
+      renderBoard();
+    }
+
+    boardEl.addEventListener("pointerdown", (event) => {
+      const cell = event.target.closest(".cell");
+      if (!cell) return;
+      const r = Number(cell.dataset.row);
+      const c = Number(cell.dataset.col);
+      selected = { r, c };
+      highlight(r, c);
+    });
+
+    document.getElementById("new").addEventListener("click", newGame);
+    document.getElementById("check").addEventListener("click", checkErrors);
+    document.getElementById("clear").addEventListener("click", () => setNumber(0));
+
+    renderPad();
+    newGame();
+  </script>
+</body>
+</html>
