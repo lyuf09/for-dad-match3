@@ -2,4831 +2,581 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Metalcore Piano Rhythm</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>爸爸的开心消消乐</title>
   <style>
     :root {
-      --bg: #090b0f;
-      --panel: #11141a;
-      --line: rgba(226, 236, 248, 0.13);
-      --line-soft: rgba(226, 236, 248, 0.07);
-      --accent: #b7c4d3;
-      --accent-2: #f2d9a2;
-      --text: #eef3f9;
-      --muted: #9ea9b6;
-      --danger: #e06c75;
-      --bg-grad-1: rgba(246, 234, 200, 0.07);
-      --bg-grad-2: rgba(164, 184, 210, 0.08);
-      --bg-overlay-1: rgba(255, 255, 255, 0.05);
-      --bg-overlay-2: rgba(248, 229, 188, 0.04);
-      --panel-grad-1: rgba(18, 22, 30, 0.82);
-      --panel-grad-2: rgba(12, 15, 21, 0.8);
-      --canvas-grad-1: rgba(26, 33, 43, 0.43);
-      --canvas-grad-2: rgba(14, 18, 25, 0.4);
-      --key-grad-1: rgba(248, 252, 255, 0.08);
-      --key-grad-2: rgba(248, 252, 255, 0.02);
-      --logo-filter: drop-shadow(0 0 32px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 72px rgba(255, 255, 255, 0.14));
-      --logo-opacity: 1;
-      --lane-1: #3c4858;
-      --lane-2: #435061;
-      --lane-3: #4a5768;
-      --lane-4: #516070;
+      --bg-1: #0b1320;
+      --bg-2: #1b2a44;
+      --panel: rgba(12, 18, 32, 0.92);
+      --panel-line: rgba(255, 255, 255, 0.12);
+      --text: #eef4ff;
+      --muted: #9fb0c9;
+      --accent: #ffd77a;
+      --tile: min(12.5vw, 64px);
+      --gap: 7px;
+      --radius: 14px;
+      --shadow: 0 18px 36px rgba(5, 8, 16, 0.55);
+      --board-grad: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0));
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: "Avenir Next", "SF Pro Display", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-      background:
-        radial-gradient(80vmax 60vmax at 12% -10%, var(--bg-grad-1), transparent 56%),
-        radial-gradient(60vmax 44vmax at 84% 100%, var(--bg-grad-2), transparent 64%),
-        var(--bg);
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
       color: var(--text);
       min-height: 100vh;
+      background:
+        radial-gradient(60vmax 48vmax at 20% -10%, rgba(255, 225, 165, 0.14), transparent 60%),
+        radial-gradient(50vmax 45vmax at 85% 100%, rgba(125, 170, 255, 0.2), transparent 65%),
+        linear-gradient(180deg, var(--bg-2), var(--bg-1));
       display: grid;
       place-items: center;
-      padding: 20px;
-      position: relative;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background:
-        linear-gradient(120deg, var(--bg-overlay-1), transparent 24%),
-        linear-gradient(240deg, var(--bg-overlay-2), transparent 30%);
-      pointer-events: none;
-      opacity: 0.62;
+      padding: 18px;
     }
 
     .app {
-      width: min(100%, 1720px);
+      width: min(960px, 100%);
       display: grid;
-      grid-template-columns: 560px 1fr;
-      gap: 24px;
-      align-items: start;
+      gap: 16px;
     }
 
-    .panel {
-      background:
-        linear-gradient(160deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0) 26%),
-        linear-gradient(180deg, var(--panel-grad-1), var(--panel-grad-2));
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 16px;
-      box-shadow:
-        0 26px 56px rgba(0, 0, 0, 0.46),
-        0 4px 16px rgba(0, 0, 0, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(14px);
-    }
-
-    .left {
+    .header {
       display: grid;
-      gap: 12px;
-      align-content: start;
-      max-height: calc(100vh - 40px);
-      overflow: auto;
-      padding-right: 6px;
-    }
-
-    .controls-grid {
-      display: grid;
-      gap: 12px;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      text-align: center;
     }
 
     h1 {
       margin: 0;
-      font-size: 24px;
-      letter-spacing: 0.75px;
-      font-weight: 750;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+      font-size: clamp(20px, 3.8vw, 30px);
+      letter-spacing: 1px;
     }
 
-    p {
-      margin: 0;
+    .subtitle {
       color: var(--muted);
-      line-height: 1.5;
-      font-size: 13px;
+      font-size: clamp(12px, 2.6vw, 14px);
     }
 
-    .group {
-      display: grid;
-      gap: 8px;
-      border-top: 1px solid var(--line-soft);
-      padding-top: 10px;
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    input[type="file"],
-    button,
-    input[type="range"],
-    select,
-    input[type="checkbox"] {
-      width: 100%;
-    }
-
-    input[type="file"] {
-      font-size: 12px;
-      color: var(--muted);
-      border: 1px solid var(--line-soft);
-      border-radius: 12px;
-      padding: 8px 10px;
-      background: rgba(19, 24, 32, 0.44);
-    }
-
-    input[type="file"]::file-selector-button {
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: linear-gradient(180deg, rgba(238, 246, 255, 0.24), rgba(132, 150, 170, 0.2));
-      color: #f6f9fe;
-      border-radius: 9px;
-      padding: 7px 10px;
-      margin-right: 10px;
-      font-weight: 650;
-      cursor: pointer;
-    }
-
-    select {
-      background:
-        linear-gradient(180deg, rgba(32, 39, 50, 0.55), rgba(17, 22, 29, 0.55));
-      color: var(--text);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 9px 11px;
-      font-size: 12px;
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        0 8px 18px rgba(0, 0, 0, 0.2);
-    }
-
-    input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      accent-color: var(--accent);
-      justify-self: end;
-    }
-
-    button {
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background:
-        linear-gradient(180deg, rgba(232, 240, 250, 0.28), rgba(157, 176, 198, 0.2)),
-        linear-gradient(180deg, #2f3a49, #232c37);
-      color: #f8fbff;
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-weight: 700;
-      letter-spacing: 0.25px;
-      cursor: pointer;
-      box-shadow:
-        0 10px 18px rgba(0, 0, 0, 0.36),
-        inset 0 1px 0 rgba(255, 255, 255, 0.24);
-      transition: transform 0.16s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    }
-
-    button.secondary {
-      background:
-        linear-gradient(180deg, rgba(220, 230, 242, 0.12), rgba(220, 230, 242, 0.06)),
-        linear-gradient(180deg, #1f2732, #1a2028);
-    }
-
-    button:hover:not(:disabled) {
-      transform: translateY(-1px);
-      border-color: rgba(255, 255, 255, 0.26);
-      box-shadow:
-        0 14px 24px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.28);
-    }
-
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    #status {
-      color: rgba(228, 238, 249, 0.86);
-      font-size: 12px;
-      min-height: 32px;
-      letter-spacing: 0.2px;
-    }
-
-    input[type="range"] {
-      appearance: none;
-      height: 7px;
-      border-radius: 999px;
-      background:
-        linear-gradient(90deg, rgba(243, 219, 163, 0.32), rgba(201, 218, 238, 0.32)),
-        rgba(40, 48, 60, 0.75);
-      border: 1px solid var(--line-soft);
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 34% 30%, #ffffff, #dfe7f2 56%, #b8c6d6 100%);
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      box-shadow: 0 0 0 5px rgba(246, 234, 200, 0.12), 0 4px 10px rgba(0, 0, 0, 0.34);
-      cursor: pointer;
-    }
-
-    input[type="range"]::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 34% 30%, #ffffff, #dfe7f2 56%, #b8c6d6 100%);
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      box-shadow: 0 0 0 5px rgba(246, 234, 200, 0.12), 0 4px 10px rgba(0, 0, 0, 0.34);
-      cursor: pointer;
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      backdrop-filter: blur(8px);
     }
 
     .stats {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      font-size: 13px;
+      text-align: center;
     }
 
     .stat {
-      background: linear-gradient(180deg, rgba(20, 26, 34, 0.64), rgba(12, 15, 21, 0.64));
-      border: 1px solid var(--line);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px;
-      padding: 9px;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      padding: 10px 6px;
+      background: rgba(255,255,255,0.04);
     }
 
-    .stat strong {
-      display: block;
-      color: var(--text);
-      font-size: 16px;
-      margin-top: 2px;
-    }
-
-    .game-wrap {
-      display: grid;
-      gap: 10px;
-      width: min(100%, 980px);
-      margin: 0 auto;
-      position: sticky;
-      top: 16px;
-    }
-
-    canvas {
-      width: 100%;
-      height: 620px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background:
-        linear-gradient(180deg, var(--canvas-grad-1), var(--canvas-grad-2) 74%);
-      display: block;
-      box-shadow:
-        0 22px 40px rgba(0, 0, 0, 0.38),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    }
-
-    .keys {
-      display: grid;
-      gap: 8px;
-    }
-
-    .key {
-      text-align: center;
-      padding: 8px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background:
-        linear-gradient(180deg, var(--key-grad-1), var(--key-grad-2)),
-        rgba(18, 23, 31, 0.48);
+    .stat h3 {
+      margin: 0;
       font-size: 12px;
       color: var(--muted);
-      user-select: none;
-      touch-action: manipulation;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      font-weight: 500;
     }
 
-    .hit {
-      box-shadow:
-        0 0 0 1px rgba(255, 245, 220, 0.74) inset,
-        0 0 16px rgba(255, 228, 166, 0.28);
-      color: var(--text);
-    }
-
-    .watermark {
-      position: fixed;
-      right: 24px;
-      bottom: 18px;
-      font-size: 12px;
-      letter-spacing: 1.2px;
-      color: rgba(225, 234, 245, 0.76);
-      pointer-events: none;
-      text-transform: uppercase;
-      z-index: 2;
-      text-shadow: 0 1px 8px rgba(255, 237, 196, 0.22);
-    }
-
-    .logo-bg {
-      position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      opacity: 1;
-      filter: blur(0.4px);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .logo-bg img {
-      width: min(82vmin, 900px);
-      height: min(82vmin, 900px);
-      object-fit: contain;
-      filter: var(--logo-filter);
-      opacity: var(--logo-opacity);
-    }
-
-    .app,
-    .watermark {
-      position: relative;
-      z-index: 1;
-    }
-
-    .guide {
-      position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background: rgba(6, 8, 12, 0.6);
-      backdrop-filter: blur(6px);
-      z-index: 3;
-    }
-
-    .guide-card {
-      width: min(90vw, 520px);
-      background:
-        linear-gradient(160deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 26%),
-        linear-gradient(180deg, rgba(20, 23, 29, 0.94), rgba(16, 18, 23, 0.92));
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 18px 18px 16px;
-      box-shadow:
-        0 24px 48px rgba(0, 0, 0, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.09);
-    }
-
-    .guide-card h2 {
-      margin: 0 0 8px;
-      font-size: 18px;
-      letter-spacing: 0.4px;
-    }
-
-    .guide-card ul {
-      margin: 0 0 14px;
-      padding: 0 0 0 18px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .keybinds {
-      display: grid;
-      gap: 8px;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .keybind-btn {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px 8px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
-        rgba(18, 23, 31, 0.45);
-      color: var(--text);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-    }
-
-    .keybind-btn.listening {
-      border-color: rgba(255, 226, 166, 0.7);
-      box-shadow: 0 0 18px rgba(255, 226, 166, 0.28);
-    }
-
-    .keybind-hint {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .left .guide-card {
-      width: 100%;
-      margin-top: 16px;
-      padding: 16px;
-    }
-
-    .guide-list {
-      margin: 8px 0 0;
-      padding: 0 0 0 18px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    .guide-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .mobile-toggle {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      z-index: 4;
-      display: none;
-      padding: 12px 14px;
-      border-radius: 999px;
+    .stat p {
+      margin: 4px 0 0;
+      font-size: clamp(18px, 4vw, 24px);
       font-weight: 700;
     }
 
-    @media (max-width: 920px) {
-      .app {
-        grid-template-columns: 1fr;
-      }
-      canvas {
-        height: 64vh;
-      }
-      .controls-grid {
-        grid-template-columns: 1fr;
-      }
-      .game-wrap {
-        order: 1;
-      }
-      .left {
-        order: 2;
-      }
-      .mobile-toggle {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .left.collapsed .controls-grid,
-      .left.collapsed #status,
-      .left.collapsed .stats {
-        display: none;
-      }
-      .left.collapsed {
-        padding-bottom: 10px;
-      }
-      button,
-      select,
-      input[type="range"] {
-        min-height: 42px;
-      }
-      .key {
-        padding: 14px 6px;
-        font-size: 14px;
-      }
+    .board-wrap {
+      display: grid;
+      gap: 12px;
     }
 
-    @media (max-width: 1300px) {
-      .controls-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
+    .board {
+      width: calc(8 * var(--tile) + 7 * var(--gap) + 20px);
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 10px;
+      border-radius: 18px;
+      background: var(--board-grad);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      grid-template-columns: repeat(8, var(--tile));
+      gap: var(--gap);
+      justify-content: center;
+      touch-action: none;
     }
 
-    @media (max-width: 1200px) {
-      .controls-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+    .tile {
+      width: var(--tile);
+      height: var(--tile);
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      font-size: clamp(18px, 4.3vw, 22px);
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.9);
+      box-shadow: inset 0 2px 6px rgba(255,255,255,0.18), 0 6px 12px rgba(0,0,0,0.25);
+      transition: transform 0.16s ease, filter 0.16s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tile.selected {
+      transform: scale(1.08);
+      filter: brightness(1.15);
+      outline: 2px solid rgba(255, 255, 255, 0.6);
+      outline-offset: -2px;
+    }
+
+    .tile.match {
+      animation: pop 0.24s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.15); }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(160deg, #ffd77a, #ffb95f);
+      color: #1b1b1b;
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.28);
+    }
+
+    button.secondary {
+      background: linear-gradient(160deg, #4a638f, #2f3e5f);
+      color: #e7eeff;
+    }
+
+    button.ghost {
+      background: rgba(255,255,255,0.08);
+      color: #dce6ff;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .message {
+      text-align: center;
+      color: var(--accent);
+      font-weight: 700;
+      min-height: 24px;
+    }
+
+    .tips {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      :root { --gap: 6px; --tile: min(13.5vw, 66px); }
+      .controls { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stat:last-child { grid-column: span 2; }
     }
   </style>
 </head>
 <body>
-  <div class="logo-bg"><img src="assets/logo.png" alt="" /></div>
-  <button id="mobileToggle" class="mobile-toggle">控制面板</button>
-  <div id="guide" class="guide">
-    <div class="guide-card">
-      <h2 data-i18n="guide_title">使用须知</h2>
-      <ul>
-        <li data-i18n="guide_1">点击左侧选择本地音频并生成谱面。</li>
-        <li data-i18n="guide_2">音符落到判定线时按键（默认 D/F/J/K）。</li>
-        <li data-i18n="guide_3">可切换难度、按键数量、拍号与识别模式。</li>
-        <li data-i18n="guide_4">建议先开“增强识别”，不满意再关闭。</li>
-        <li data-i18n="guide_5">谱面对复杂变拍可能不稳定，属正常现象。</li>
-      </ul>
-      <div class="guide-actions">
-        <button id="guideOk" data-i18n="guide_ok">我知道了</button>
-        <button id="guideHide" class="secondary" data-i18n="guide_hide">下次不再显示</button>
+  <div class="app">
+    <div class="header">
+      <h1>爸爸的开心消消乐</h1>
+      <div class="subtitle">轻松消除，快乐每一天</div>
+    </div>
+
+    <div class="panel">
+      <div class="stats">
+        <div class="stat">
+          <h3>得分</h3>
+          <p id="score">0</p>
+        </div>
+        <div class="stat">
+          <h3>剩余步数</h3>
+          <p id="moves">20</p>
+        </div>
+        <div class="stat">
+          <h3>目标分数</h3>
+          <p id="target">1200</p>
+        </div>
       </div>
     </div>
+
+    <div class="panel board-wrap">
+      <div id="message" class="message"></div>
+      <div id="board" class="board" aria-label="开心消消乐棋盘"></div>
+    </div>
+
+    <div class="panel">
+      <div class="controls">
+        <button id="restart">重新开始</button>
+        <button id="shuffle" class="secondary">洗牌</button>
+        <button id="help" class="ghost">玩法说明</button>
+      </div>
+    </div>
+
+    <div class="tips" id="tips">
+      点击或拖动两个相邻的方块进行交换，连成三个或更多同色即可消除。
+    </div>
   </div>
-  <div class="watermark">
-    <span>Made by Haze_zzZ</span>
-  </div>
-  <main class="app">
-    <section class="panel left">
-      <div class="row" style="align-items:flex-start;">
-        <div>
-          <h1 data-i18n="title">前卫核钢琴节奏</h1>
-          <p data-i18n="subtitle">上传本地歌曲，自动检测节拍并生成下落音符。音符落到浅灰蓝判定线时按 D / F / J / K。</p>
-        </div>
-        <div style="min-width:110px;">
-          <select id="langToggle" aria-label="Language">
-            <option value="zh">中文</option>
-            <option value="en">English</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="controls-grid">
-      <div class="group">
-        <label class="muted" for="audioFile" data-i18n="label_audio">歌曲文件（mp3/wav/m4a）</label>
-        <input id="audioFile" type="file" accept="audio/*" />
-      </div>
-
-      <div class="group">
-        <label class="muted" for="midiFile" data-i18n="label_midi">MIDI 文件（.mid/.midi）</label>
-        <input id="midiFile" type="file" accept=".mid,.midi,audio/midi" />
-      </div>
-
-      <div class="group">
-        <div class="row">
-          <label class="muted" for="midiMode" data-i18n="label_midi_mode">MIDI 模式</label>
-          <span id="midiModeText" class="muted">自动</span>
-        </div>
-        <select id="midiMode">
-          <option value="auto">自动（主旋律）</option>
-          <option value="melody">主旋律</option>
-          <option value="melody_harmony">主旋律 + 和声</option>
-          <option value="drums">仅鼓组</option>
-          <option value="drums_plus">鼓组 + 主旋律</option>
-          <option value="all">全部</option>
-        </select>
-      </div>
-
-      <div class="group">
-        <button id="sampleBtn" class="secondary" data-i18n="btn_sample">示例歌曲：HaM - Haze_zzZ</button>
-      </div>
-
-      <div class="group">
-        <div class="row">
-          <span class="muted" data-i18n="hint_files">可从“文件”或网盘选择音频</span>
-        </div>
-      </div>
-
-      <div class="group">
-        <button id="recordBtn" class="secondary" data-i18n="btn_record">录音模式：开始</button>
-        <button id="stopRecordBtn" class="secondary" disabled data-i18n="btn_record_stop">停止录音</button>
-        <div class="row">
-          <span class="muted" data-i18n="record_timer_label">剩余录音</span>
-          <span id="recordTimer" class="muted">60s</span>
-        </div>
-      </div>
-
-        <div class="group">
-          <div class="row">
-            <label class="muted" for="density" data-i18n="label_density">谱面密度</label>
-            <span id="densityText" class="muted">1.00x</span>
-          </div>
-          <input id="density" type="range" min="0.6" max="1.8" value="1" step="0.05" />
-        </div>
-
-        <div class="group">
-          <div class="row">
-            <label class="muted" for="offset" data-i18n="label_offset">音符偏移</label>
-            <span id="offsetText" class="muted">0 ms</span>
-          </div>
-          <input id="offset" type="range" min="-150" max="150" value="0" step="5" />
-        </div>
-
-        <div class="group">
-          <div class="row">
-            <label class="muted" for="focusMode" data-i18n="label_focus">识别模式</label>
-            <span id="focusText" class="muted">自动切换</span>
-          </div>
-          <select id="focusMode">
-            <option value="auto">自动切换（每4小节）</option>
-            <option value="drum">鼓优先</option>
-            <option value="bass">贝斯优先</option>
-            <option value="guitar">吉他优先</option>
-            <option value="piano">钢琴优先</option>
-            <option value="vocal">人声优先</option>
-            <option value="mix">混合</option>
-          </select>
-        </div>
-
-      <div class="group">
-        <div class="row">
-          <label class="muted" for="beatTrack" data-i18n="label_beat_track">节拍追踪</label>
-          <span id="beatText" class="muted">开</span>
-        </div>
-        <input id="beatTrack" type="checkbox" checked />
-      </div>
-
-      <div class="group">
-        <div class="row">
-          <label class="muted" for="enhanceMode" data-i18n="label_enhance">增强识别</label>
-          <span id="enhanceText" class="muted">开</span>
-        </div>
-        <input id="enhanceMode" type="checkbox" checked />
-      </div>
-
-      <div class="group">
-        <div class="row">
-          <label class="muted" for="timeSig" data-i18n="label_timesig">拍号</label>
-          <span id="timeSigText" class="muted">自动</span>
-        </div>
-          <select id="timeSig">
-            <option value="auto">自动估计</option>
-            <option value="4/4">4/4</option>
-            <option value="3/4">3/4</option>
-            <option value="7/8">7/8</option>
-            <option value="6/8">6/8</option>
-            <option value="9/8">9/8</option>
-            <option value="5/4">5/4</option>
-            <option value="12/8">12/8</option>
-          </select>
-        </div>
-
-        <div class="group">
-          <div class="row">
-            <label class="muted" for="difficulty" data-i18n="label_difficulty">难度</label>
-            <span id="difficultyText" class="muted">普通</span>
-          </div>
-          <select id="difficulty">
-            <option value="easy">简单</option>
-            <option value="normal" selected>普通</option>
-            <option value="hard">困难</option>
-            <option value="expert">地狱</option>
-          </select>
-        </div>
-
-      <div class="group">
-        <div class="row">
-          <label class="muted" for="laneCount" data-i18n="label_lane">按键数量</label>
-          <span id="laneText" class="muted">4 键</span>
-        </div>
-        <select id="laneCount">
-          <option value="4" selected>4 键</option>
-          <option value="6">6 键</option>
-          <option value="8">8 键</option>
-        </select>
-      </div>
-
-      <div class="group">
-        <div class="row">
-          <label class="muted" for="themeSelect" data-i18n="label_theme">主题预设</label>
-          <span id="themeText" class="muted" data-i18n="theme_silver">银蓝</span>
-        </div>
-        <select id="themeSelect">
-          <option value="gold" data-i18n="theme_gold">暗金</option>
-          <option value="silver" data-i18n="theme_silver" selected>银蓝</option>
-          <option value="haze" data-i18n="theme_haze">雾蓝</option>
-          <option value="snow" data-i18n="theme_snow">白雪</option>
-          <option value="obsidian" data-i18n="theme_obsidian">黑曜石</option>
-        </select>
-      </div>
-
-      <div class="group">
-        <div class="row">
-          <label class="muted" data-i18n="label_keybind">按键绑定</label>
-          <button id="keyReset" class="secondary" data-i18n="btn_keyreset">重置</button>
-        </div>
-        <div id="keybinds" class="keybinds"></div>
-        <div class="keybind-hint" data-i18n="keybind_hint">点击按键框后按键盘设置</div>
-      </div>
-
-      <div class="group">
-        <div class="row">
-          <label class="muted" for="beatLock" data-i18n="label_lock">节拍锁定强度</label>
-          <span id="beatLockText" class="muted">65%</span>
-        </div>
-        <input id="beatLock" type="range" min="0" max="1" value="0.65" step="0.05" />
-      </div>
-
-        <div class="group">
-          <div class="row">
-            <label class="muted" for="sfxVolume" data-i18n="label_sfx">音效音量</label>
-            <span id="sfxText" class="muted">80%</span>
-          </div>
-          <input id="sfxVolume" type="range" min="0" max="1.4" value="0.8" step="0.05" />
-        </div>
-
-        <div class="group">
-          <div class="row">
-            <label class="muted" for="fxQuality" data-i18n="label_fx_quality">特效档位</label>
-            <span id="fxQualityText" class="muted" data-i18n="fx_high">高</span>
-          </div>
-          <select id="fxQuality">
-            <option value="off" data-i18n="fx_off">关</option>
-            <option value="medium" data-i18n="fx_medium">中</option>
-            <option value="high" selected data-i18n="fx_high">高</option>
-          </select>
-        </div>
-        </div>
-
-      <div class="group">
-        <button id="analyzeBtn" disabled data-i18n="btn_analyze">分析并生成谱面</button>
-        <button id="regenBtn" class="secondary" disabled data-i18n="btn_regen">按当前密度重新生成</button>
-        <button id="playBtn" disabled data-i18n="btn_play">开始游戏</button>
-        <button id="pauseBtn" class="secondary" disabled data-i18n="btn_pause">暂停</button>
-      </div>
-
-      <div id="status" data-i18n="status_idle">等待上传歌曲…</div>
-
-      <div class="stats">
-        <div class="stat"><span data-i18n="stat_bpm">估计 BPM</span><strong id="bpmStat">-</strong></div>
-        <div class="stat"><span data-i18n="stat_notes">音符数</span><strong id="noteStat">-</strong></div>
-        <div class="stat"><span data-i18n="stat_key">调性</span><strong id="keyStat">-</strong></div>
-        <div class="stat"><span data-i18n="stat_score">分数</span><strong id="scoreStat">0</strong></div>
-        <div class="stat"><span data-i18n="stat_combo">连击</span><strong id="comboStat">0</strong></div>
-        <div class="stat"><span data-i18n="stat_hold">Hold</span><strong id="holdStat">0</strong></div>
-        <div class="stat"><span data-i18n="stat_chord">Chord</span><strong id="chordStat">0</strong></div>
-      </div>
-
-      <div class="guide-card">
-        <div class="row space-between">
-          <strong data-i18n="guide_quickstart">快速上手</strong>
-          <span class="muted" data-i18n="guide_hint">判定线发光时按键</span>
-        </div>
-        <ol class="guide-list">
-          <li data-i18n="guide_step1">点击“示例歌曲”试听，再用你的歌生成谱面。</li>
-          <li data-i18n="guide_step2">开局会有3秒倒计时，判定线会脉冲提示拍点。</li>
-          <li data-i18n="guide_step3">长按音符需要按住到尾端发光块结束。</li>
-          <li data-i18n="guide_step4">卡顿时把特效档位调到“中”或“关”。</li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="game-wrap">
-      <canvas id="game" width="620" height="620"></canvas>
-      <div class="keys">
-        <div id="key0" class="key">D</div>
-        <div id="key1" class="key">F</div>
-        <div id="key2" class="key">J</div>
-        <div id="key3" class="key">K</div>
-      </div>
-    </section>
-  </main>
 
   <script>
-    const ui = {
-      file: document.getElementById("audioFile"),
-      midi: document.getElementById("midiFile"),
-      midiMode: document.getElementById("midiMode"),
-      midiModeText: document.getElementById("midiModeText"),
-      analyze: document.getElementById("analyzeBtn"),
-      regen: document.getElementById("regenBtn"),
-      play: document.getElementById("playBtn"),
-      pause: document.getElementById("pauseBtn"),
-      sample: document.getElementById("sampleBtn"),
-      record: document.getElementById("recordBtn"),
-      stopRecord: document.getElementById("stopRecordBtn"),
-      recordTimer: document.getElementById("recordTimer"),
-      density: document.getElementById("density"),
-      densityText: document.getElementById("densityText"),
-      offset: document.getElementById("offset"),
-      offsetText: document.getElementById("offsetText"),
-      focusMode: document.getElementById("focusMode"),
-      focusText: document.getElementById("focusText"),
-      beatTrack: document.getElementById("beatTrack"),
-      beatText: document.getElementById("beatText"),
-      enhanceMode: document.getElementById("enhanceMode"),
-      enhanceText: document.getElementById("enhanceText"),
-      timeSig: document.getElementById("timeSig"),
-      timeSigText: document.getElementById("timeSigText"),
-      difficulty: document.getElementById("difficulty"),
-      difficultyText: document.getElementById("difficultyText"),
-      laneCount: document.getElementById("laneCount"),
-      laneText: document.getElementById("laneText"),
-      keyStat: document.getElementById("keyStat"),
-      beatLock: document.getElementById("beatLock"),
-      beatLockText: document.getElementById("beatLockText"),
-      sfxVolume: document.getElementById("sfxVolume"),
-      sfxText: document.getElementById("sfxText"),
-      fxQuality: document.getElementById("fxQuality"),
-      fxQualityText: document.getElementById("fxQualityText"),
-      themeSelect: document.getElementById("themeSelect"),
-      themeText: document.getElementById("themeText"),
-      keybinds: document.getElementById("keybinds"),
-      keyReset: document.getElementById("keyReset"),
-      status: document.getElementById("status"),
-      bpm: document.getElementById("bpmStat"),
-      notes: document.getElementById("noteStat"),
-      score: document.getElementById("scoreStat"),
-      combo: document.getElementById("comboStat"),
-      hold: document.getElementById("holdStat"),
-      chord: document.getElementById("chordStat"),
-      canvas: document.getElementById("game"),
-      keyEls: []
-    };
-
-    const keySets = {
-      4: ["d", "f", "j", "k"],
-      6: ["a", "s", "d", "j", "k", "l"],
-      8: ["a", "s", "d", "f", "j", "k", "l", ";"]
-    };
-    let tonePalette = [
-      { hue: 195, sat: 18, light: 76 },
-      { hue: 205, sat: 22, light: 70 },
-      { hue: 215, sat: 26, light: 64 },
-      { hue: 228, sat: 18, light: 58 },
-      { hue: 238, sat: 14, light: 74 }
+    const rows = 8;
+    const cols = 8;
+    const colors = [
+      { name: "sun", label: "★", bg: "linear-gradient(145deg, #ffd56a, #ffb85c)" },
+      { name: "sky", label: "◆", bg: "linear-gradient(145deg, #7fd2ff, #5aa9ff)" },
+      { name: "rose", label: "❤", bg: "linear-gradient(145deg, #ff8eb3, #ff6a88)" },
+      { name: "mint", label: "●", bg: "linear-gradient(145deg, #8ff0b5, #4bdc92)" },
+      { name: "grape", label: "▲", bg: "linear-gradient(145deg, #c3a5ff, #8b6bff)" },
+      { name: "amber", label: "✦", bg: "linear-gradient(145deg, #ffc37b, #ff8f4f)" }
     ];
-    let keyMap = {};
-    let laneCount = 4;
-    let hitWindow = 0.13;
-    let perfectWindow = 0.055;
-    let scrollTime = 2.1;
-    let offsetSec = 0;
-    let focusMode = "auto";
-    let beatTrack = true;
-    let beatOffset = 0;
-    let beatLock = 0.65;
-    let timeSig = "auto";
-    let barBeats = 4;
-    let difficulty = "normal";
-    let enhanceMode = true;
-    let laneFlash = [];
-    let FLASH_DURATION = 0.2;
-    let fxQuality = "high";
-    let countdownActive = false;
-    let countdownEnd = 0;
-    let sfxVolume = 0.8;
-    let keyLabel = "-";
-    let keyBaseFreq = 1760;
-    const particles = [];
-    let MAX_PARTICLES = 220;
-    let HEAVY_PARTICLE_THRESHOLD = 120;
-    let FX_GLOW = 1;
-    let FX_PARTICLE_GLOW = 1;
-    let activeHolds = [];
-    const pressedKeys = new Set();
-    let keyBindings = [];
-    let bindingLane = null;
-    let theme = "silver";
-    let midiOnsets = null;
-    let midiPlaybackOnsets = null;
-    let midiBpm = null;
-    let midiTimeSig = null;
-    let midiDuration = 0;
-    let currentSource = "audio";
-    let midiMode = "auto";
-    let midiSynthGain = null;
-    let midiSynthFilter = null;
-    let midiSynthComp = null;
-    let midiNoiseBuffer = null;
-    let midiPianoWave = null;
-    let midiVerbBuffer = null;
-    let midiVerbWet = null;
-    let holdReverbBuffer = null;
-    let holdSustainBus = null;
-    let midiSynthNodes = [];
-    let midiScheduleTimer = null;
-    let midiScheduleCursor = 0;
-    let midiScheduleOnsets = null;
-    let midiScheduleSongOffset = 0;
-    applyFxQuality(fxQuality);
 
-    let ctx;
-    let audioBuffer = null;
-    let sourceNode = null;
-    let fileName = "";
-    let chart = [];
-    let baseOnsets = [];
-    let onsetsByMode = null;
-    let estimatedBpm = 120;
-    let startTime = 0;
-    let rafId = 0;
-    let running = false;
+    const boardEl = document.getElementById("board");
+    const scoreEl = document.getElementById("score");
+    const movesEl = document.getElementById("moves");
+    const targetEl = document.getElementById("target");
+    const messageEl = document.getElementById("message");
+    const tipsEl = document.getElementById("tips");
+
+    let board = [];
+    let selected = null;
     let score = 0;
-    let combo = 0;
-    let nextMissIndex = 0;
-    let paused = false;
-    let pauseOffset = 0;
-    let recorder = null;
-    let recordChunks = [];
-    let recordTimeout = null;
-    let recordInterval = null;
-    let lastFrameTs = 0;
-    let renderStartIndex = 0;
-    let lastRenderTime = 0;
+    let moves = 20;
+    let target = 1200;
+    let busy = false;
+    let pointerId = null;
+    let dragStart = null;
+    let swapTriggered = false;
 
-    const gameState = {
-      width: ui.canvas.width,
-      height: ui.canvas.height,
-      judgeY: ui.canvas.height - 90
-    };
-
-    const g = ui.canvas.getContext("2d");
-
-    const i18n = {
-      zh: {
-        guide_title: "使用须知",
-        guide_1: "点击左侧选择本地音频并生成谱面。",
-        guide_2: "音符落到判定线时按键（默认 D/F/J/K）。",
-        guide_3: "可切换难度、按键数量、拍号与识别模式。",
-        guide_4: "建议先开“增强识别”，不满意再关闭。",
-        guide_5: "谱面对复杂变拍可能不稳定，属正常现象。",
-        guide_ok: "我知道了",
-        guide_hide: "下次不再显示",
-        title: "前卫核钢琴节奏",
-        subtitle: "上传本地歌曲，自动检测节拍并生成下落音符。音符落到浅灰蓝判定线时按 D / F / J / K。",
-        label_audio: "歌曲文件（mp3/wav/m4a）",
-        label_midi: "MIDI 文件（.mid/.midi）",
-        label_midi_mode: "MIDI 模式",
-        label_density: "谱面密度",
-        label_offset: "音符偏移",
-        label_focus: "识别模式",
-        label_beat_track: "节拍追踪",
-        label_enhance: "增强识别",
-        label_timesig: "拍号",
-        label_difficulty: "难度",
-        label_lane: "按键数量",
-        label_theme: "主题预设",
-        theme_gold: "暗金",
-        theme_silver: "银蓝",
-        theme_haze: "雾蓝",
-        theme_snow: "白雪",
-        theme_obsidian: "黑曜石",
-        label_keybind: "按键绑定",
-        btn_keyreset: "重置",
-        keybind_hint: "点击按键框后按键盘设置",
-        label_lock: "节拍锁定强度",
-        label_sfx: "音效音量",
-        label_fx_quality: "特效档位",
-        fx_off: "关",
-        fx_medium: "中",
-        fx_high: "高",
-        record_timer_label: "剩余录音",
-        hint_files: "可从“文件”或网盘选择音频",
-        btn_analyze: "分析并生成谱面",
-        btn_regen: "按当前密度重新生成",
-        btn_play: "开始游戏",
-        btn_pause: "暂停",
-        btn_resume: "继续",
-        btn_record: "录音模式：开始",
-        btn_record_stop: "停止录音",
-        status_recording: "正在录音…",
-        status_record_done: "录音完成，点击“分析并生成谱面”。",
-        btn_sample: "示例歌曲：HaM - Haze_zzZ",
-        mobile_open: "控制面板",
-        mobile_close: "关闭面板",
-        status_idle: "等待上传歌曲…",
-        status_analyzing: "正在提取打击点…",
-        status_loaded: (name) => `已加载《${name}》，点击“分析并生成谱面”。`,
-        status_midi_loaded: (name) => `已加载 MIDI《${name}》，点击“分析并生成谱面”。`,
-        midi_auto: "自动（主旋律）",
-        midi_melody: "主旋律",
-        midi_melody_harmony: "主旋律 + 和声",
-        midi_drums: "仅鼓组",
-        midi_drums_plus: "鼓组 + 主旋律",
-        midi_all: "全部",
-        status_ready: (name) => `已为《${name}》生成谱面，可直接开始游戏。`,
-        status_none: "没有检测到足够的打击点，请提高谱面密度或换首节奏更明显的歌。",
-        status_regen: (d) => `已按 ${d}x 密度重建谱面。`,
-        status_playing: "游戏进行中…",
-        status_end: (score) => `歌曲结束，最终分数 ${score}。`,
-        stat_bpm: "估计 BPM",
-        stat_notes: "音符数",
-        stat_key: "调性",
-        stat_score: "分数",
-        stat_combo: "连击",
-        stat_hold: "Hold",
-        stat_chord: "Chord",
-        guide_quickstart: "快速上手",
-        guide_hint: "判定线发光时按键",
-        guide_step1: "点击“示例歌曲”试听，再用你的歌生成谱面。",
-        guide_step2: "开局会有3秒倒计时，判定线会脉冲提示拍点。",
-        guide_step3: "长按音符需要按住到尾端发光块结束。",
-        guide_step4: "卡顿时把特效档位调到“中”或“关”。",
-        countdown_hint: "判定线发光时按键",
-        focus_auto: "自动切换（每4小节）",
-        focus_drum: "鼓优先",
-        focus_bass: "贝斯优先",
-        focus_guitar: "吉他优先",
-        focus_piano: "钢琴优先",
-        focus_vocal: "人声优先",
-        focus_mix: "混合",
-        beat_on: "开",
-        beat_off: "关",
-        enhance_on: "开",
-        enhance_off: "关",
-        time_auto: "自动估计",
-        difficulty_easy: "简单",
-        difficulty_normal: "普通",
-        difficulty_hard: "困难",
-        difficulty_expert: "地狱",
-        lane_keys: (n) => `${n} 键`,
-        custom: "自定义"
-      },
-      en: {
-        guide_title: "Quick Start",
-        guide_1: "Choose a local audio file on the left and generate a chart.",
-        guide_2: "Press when notes hit the judgment line (default D/F/J/K).",
-        guide_3: "Switch difficulty, key count, time signature, and mode.",
-        guide_4: "Try Enhanced mode first; turn it off if needed.",
-        guide_5: "Complex meter changes may reduce accuracy.",
-        guide_ok: "Got it",
-        guide_hide: "Don't show again",
-        title: "Metalcore Piano Rhythm",
-        subtitle: "Upload audio to auto‑generate falling notes. Hit at the judgment line with D / F / J / K.",
-        label_audio: "Audio file (mp3/wav/m4a)",
-        label_midi: "MIDI file (.mid/.midi)",
-        label_midi_mode: "MIDI Mode",
-        label_density: "Chart Density",
-        label_offset: "Note Offset",
-        label_focus: "Detection Mode",
-        label_beat_track: "Beat Tracking",
-        label_enhance: "Enhanced Mode",
-        label_timesig: "Time Signature",
-        label_difficulty: "Difficulty",
-        label_lane: "Key Count",
-        label_theme: "Theme",
-        theme_gold: "Dark Gold",
-        theme_silver: "Silver Blue",
-        theme_haze: "Haze Blue",
-        theme_snow: "Snow",
-        theme_obsidian: "Obsidian",
-        label_keybind: "Key Bindings",
-        btn_keyreset: "Reset",
-        keybind_hint: "Click a slot, then press a key",
-        label_lock: "Beat Lock",
-        label_sfx: "SFX Volume",
-        label_fx_quality: "FX Quality",
-        fx_off: "Off",
-        fx_medium: "Medium",
-        fx_high: "High",
-        record_timer_label: "Recording left",
-        hint_files: "Choose audio from Files or cloud drives",
-        btn_analyze: "Analyze & Generate",
-        btn_regen: "Regenerate",
-        btn_play: "Start",
-        btn_pause: "Pause",
-        btn_resume: "Resume",
-        btn_record: "Record: Start",
-        btn_record_stop: "Stop Recording",
-        status_recording: "Recording…",
-        status_record_done: "Recording ready. Click Analyze.",
-        btn_sample: "Sample: HaM - Haze_zzZ",
-        mobile_open: "Controls",
-        mobile_close: "Hide Controls",
-        status_idle: "Waiting for audio…",
-        status_analyzing: "Analyzing onsets…",
-        status_loaded: (name) => `Loaded “${name}”. Click Analyze.`,
-        status_midi_loaded: (name) => `MIDI loaded: “${name}”. Click Analyze.`,
-        midi_auto: "Auto (Melody)",
-        midi_melody: "Melody",
-        midi_melody_harmony: "Melody + Harmony",
-        midi_drums: "Drums only",
-        midi_drums_plus: "Drums + Melody",
-        midi_all: "All",
-        status_ready: (name) => `Chart ready for “${name}”.`,
-        status_none: "Not enough onsets detected. Increase density or try another track.",
-        status_regen: (d) => `Regenerated at ${d}x density.`,
-        status_playing: "Playing…",
-        status_end: (score) => `Song ended. Final score ${score}.`,
-        stat_bpm: "Estimated BPM",
-        stat_notes: "Notes",
-        stat_key: "Key",
-        stat_score: "Score",
-        stat_combo: "Combo",
-        stat_hold: "Hold",
-        stat_chord: "Chord",
-        guide_quickstart: "Quick Start",
-        guide_hint: "Hit when the line glows",
-        guide_step1: "Try the sample track, then load yours to generate a chart.",
-        guide_step2: "A 3s countdown will pulse the judgment line before start.",
-        guide_step3: "For holds, keep pressing until the glowing tail ends.",
-        guide_step4: "If it stutters, lower FX Quality to Medium or Off.",
-        countdown_hint: "Hit when the line glows",
-        focus_auto: "Auto (per 4 bars)",
-        focus_drum: "Drum‑focused",
-        focus_bass: "Bass‑focused",
-        focus_guitar: "Guitar‑focused",
-        focus_piano: "Piano‑focused",
-        focus_vocal: "Vocal‑focused",
-        focus_mix: "Mixed",
-        beat_on: "On",
-        beat_off: "Off",
-        enhance_on: "On",
-        enhance_off: "Off",
-        time_auto: "Auto",
-        difficulty_easy: "Easy",
-        difficulty_normal: "Normal",
-        difficulty_hard: "Hard",
-        difficulty_expert: "Expert",
-        lane_keys: (n) => `${n} Keys`,
-        custom: "Custom"
-      }
-    };
-
-    let lang = "zh";
-    const t = (key, ...args) => {
-      const val = i18n[lang][key];
-      return typeof val === "function" ? val(...args) : val;
-    };
-
-    function applyI18n() {
-      document.querySelectorAll("[data-i18n]").forEach((el) => {
-        const key = el.getAttribute("data-i18n");
-        if (i18n[lang][key]) el.textContent = i18n[lang][key];
-      });
-      const focusLabels = {
-        auto: t("focus_auto"),
-        drum: t("focus_drum"),
-        bass: t("focus_bass"),
-        guitar: t("focus_guitar"),
-        piano: t("focus_piano"),
-        vocal: t("focus_vocal"),
-        mix: t("focus_mix")
-      };
-      Array.from(ui.focusMode.options).forEach((opt) => {
-        opt.textContent = focusLabels[opt.value] || opt.value;
-      });
-      const timeAuto = t("time_auto");
-      Array.from(ui.timeSig.options).forEach((opt) => {
-        if (opt.value === "auto") opt.textContent = timeAuto;
-      });
-      const diffLabels = {
-        easy: t("difficulty_easy"),
-        normal: t("difficulty_normal"),
-        hard: t("difficulty_hard"),
-        expert: t("difficulty_expert")
-      };
-      Array.from(ui.difficulty.options).forEach((opt) => {
-        opt.textContent = diffLabels[opt.value] || opt.value;
-      });
-      Array.from(ui.laneCount.options).forEach((opt) => {
-        opt.textContent = t("lane_keys", opt.value);
-      });
-      const themeLabels = {
-        gold: t("theme_gold"),
-        silver: t("theme_silver"),
-        haze: t("theme_haze"),
-        snow: t("theme_snow"),
-        obsidian: t("theme_obsidian")
-      };
-      Array.from(ui.themeSelect.options).forEach((opt) => {
-        opt.textContent = themeLabels[opt.value] || opt.value;
-      });
-      const fxLabels = {
-        off: t("fx_off"),
-        medium: t("fx_medium"),
-        high: t("fx_high")
-      };
-      Array.from(ui.fxQuality.options).forEach((opt) => {
-        opt.textContent = fxLabels[opt.value] || opt.value;
-      });
-      const midiLabels = {
-        auto: t("midi_auto"),
-        melody: t("midi_melody"),
-        melody_harmony: t("midi_melody_harmony"),
-        drums: t("midi_drums"),
-        drums_plus: t("midi_drums_plus"),
-        all: t("midi_all")
-      };
-      Array.from(ui.midiMode.options).forEach((opt) => {
-        opt.textContent = midiLabels[opt.value] || opt.value;
-      });
-      ui.midiModeText.textContent = midiLabels[midiMode] || t("midi_auto");
-      ui.focusText.textContent = focusLabels[focusMode] || t("focus_mix");
-      ui.beatText.textContent = beatTrack ? t("beat_on") : t("beat_off");
-      ui.enhanceText.textContent = enhanceMode ? t("enhance_on") : t("enhance_off");
-      ui.timeSigText.textContent = timeSig === "auto" ? t("time_auto") : timeSig;
-      ui.difficultyText.textContent = diffLabels[difficulty] || t("difficulty_normal");
-      ui.laneText.textContent = t("lane_keys", laneCount);
-      ui.fxQualityText.textContent = fxLabels[fxQuality] || t("fx_high");
-      ui.themeText.textContent = themeLabels[theme] || t("theme_silver");
-      ui.pause.textContent = paused ? t("btn_resume") : t("btn_pause");
+    function randColor() {
+      return Math.floor(Math.random() * colors.length);
     }
 
-    function buildKeyMap() {
-      keyMap = {};
-      keyBindings = loadKeyBindings(laneCount);
-      const keys = keyBindings;
-      keys.forEach((k, i) => {
-        keyMap[k] = i;
-      });
-      laneFlash = new Array(laneCount).fill(-999);
-      activeHolds = new Array(laneCount).fill(null);
-      ui.keyEls = [];
-      const keysWrap = document.querySelector(".keys");
-      keysWrap.style.gridTemplateColumns = `repeat(${laneCount}, 1fr)`;
-      keysWrap.innerHTML = "";
-      for (let i = 0; i < laneCount; i += 1) {
-        const el = document.createElement("div");
-        el.className = "key";
-        el.textContent = (keys[i] || "?").toUpperCase();
-        el.dataset.lane = String(i);
-        el.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          const lane = Number(el.dataset.lane);
-          if (pressedKeys.has(`p${lane}`)) return;
-          pressedKeys.add(`p${lane}`);
-          el.classList.add("hit");
-          setTimeout(() => el.classList.remove("hit"), 80);
-          hitLane(lane);
-        });
-        el.addEventListener("pointerup", () => {
-          const lane = Number(el.dataset.lane);
-          pressedKeys.delete(`p${lane}`);
-          releaseLane(lane);
-        });
-        el.addEventListener("pointerleave", () => {
-          const lane = Number(el.dataset.lane);
-          pressedKeys.delete(`p${lane}`);
-          releaseLane(lane);
-        });
-        keysWrap.appendChild(el);
-        ui.keyEls.push(el);
-      }
-      renderKeybinds();
+    function createEmptyBoard() {
+      return Array.from({ length: rows }, () => Array(cols).fill(null));
     }
 
-    function updateDifficulty() {
-      const map = {
-        easy: { density: 0.8, hit: 0.15, perfect: 0.065, label: t("difficulty_easy") },
-        normal: { density: 1.0, hit: 0.13, perfect: 0.055, label: t("difficulty_normal") },
-        hard: { density: 1.2, hit: 0.11, perfect: 0.05, label: t("difficulty_hard") },
-        expert: { density: 1.45, hit: 0.095, perfect: 0.045, label: t("difficulty_expert") }
-      };
-      const preset = map[difficulty] || map.normal;
-      ui.density.value = String(preset.density);
-      ui.densityText.textContent = `${preset.density.toFixed(2)}x`;
-      hitWindow = preset.hit;
-      perfectWindow = preset.perfect;
-      ui.difficultyText.textContent = preset.label;
+    function hasMatchAt(r, c, color) {
+      let count = 1;
+      let i = c - 1;
+      while (i >= 0 && board[r][i] === color) { count++; i--; }
+      i = c + 1;
+      while (i < cols && board[r][i] === color) { count++; i++; }
+      if (count >= 3) return true;
+
+      count = 1;
+      let j = r - 1;
+      while (j >= 0 && board[j][c] === color) { count++; j--; }
+      j = r + 1;
+      while (j < rows && board[j][c] === color) { count++; j++; }
+      return count >= 3;
     }
 
-    function toneColor(rng = Math.random) {
-      const base = tonePalette[Math.floor(rng() * tonePalette.length)];
-      const hue = base.hue + (rng() * 10 - 5);
-      const sat = Math.min(32, Math.max(10, base.sat + (rng() * 10 - 5)));
-      const light = Math.min(88, Math.max(52, base.light + (rng() * 12 - 6)));
-      return `hsl(${hue.toFixed(1)}, ${sat.toFixed(1)}%, ${light.toFixed(1)}%)`;
-    }
-
-    function laneColor(index) {
-      return tonePalette[index % tonePalette.length] ?
-        `hsl(${tonePalette[index % tonePalette.length].hue}, ${tonePalette[index % tonePalette.length].sat}%, ${tonePalette[index % tonePalette.length].light}%)`
-        : "#9aa7b6";
-    }
-
-    function setStatus(text, error = false) {
-      ui.status.textContent = text;
-      ui.status.style.color = error ? "var(--danger)" : "var(--muted)";
-    }
-
-    function ensureAudioContext() {
-      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-      return ctx;
-    }
-
-    function createSilentBuffer(duration) {
-      const audioCtx = ensureAudioContext();
-      const length = Math.max(1, Math.floor(duration * audioCtx.sampleRate));
-      const buffer = audioCtx.createBuffer(1, length, audioCtx.sampleRate);
-      return buffer;
-    }
-
-    function stopMidiSynth() {
-      if (midiScheduleTimer) {
-        clearInterval(midiScheduleTimer);
-        midiScheduleTimer = null;
-      }
-      midiScheduleCursor = 0;
-      midiScheduleOnsets = null;
-      midiScheduleSongOffset = 0;
-      if (midiSynthNodes.length) {
-        midiSynthNodes.forEach((n) => {
-          try { n.stop(0); } catch {}
-          try { n.disconnect(); } catch {}
-        });
-      }
-      midiSynthNodes = [];
-    }
-
-    function getMidiNoiseBuffer(audioCtx) {
-      if (midiNoiseBuffer && midiNoiseBuffer.sampleRate === audioCtx.sampleRate) return midiNoiseBuffer;
-      const dur = 0.14;
-      const length = Math.floor(audioCtx.sampleRate * dur);
-      const buffer = audioCtx.createBuffer(1, length, audioCtx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < length; i += 1) {
-        data[i] = (Math.random() * 2 - 1) * (1 - i / length);
-      }
-      midiNoiseBuffer = buffer;
-      return buffer;
-    }
-
-    function getMidiPianoWave(audioCtx) {
-      if (midiPianoWave) return midiPianoWave;
-      const harmonics = [0, 1.0, 0.62, 0.36, 0.22, 0.14, 0.1, 0.075, 0.055, 0.04, 0.03];
-      const real = new Float32Array(harmonics.length);
-      const imag = new Float32Array(harmonics.length);
-      for (let i = 1; i < harmonics.length; i += 1) {
-        imag[i] = harmonics[i];
-      }
-      midiPianoWave = audioCtx.createPeriodicWave(real, imag, { disableNormalization: false });
-      return midiPianoWave;
-    }
-
-    function scheduleMidiSynth(onsets, bpm) {
-      if (!onsets || !onsets.length) return;
-      const audioCtx = ensureAudioContext();
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume().catch(() => {});
-      }
-      if (!midiSynthGain) {
-        midiSynthGain = audioCtx.createGain();
-        midiSynthGain.gain.value = 0.78;
-        midiSynthFilter = audioCtx.createBiquadFilter();
-        midiSynthFilter.type = "lowpass";
-        midiSynthFilter.frequency.value = 9800;
-        midiSynthFilter.Q.value = 0.42;
-        const midiPresence = audioCtx.createBiquadFilter();
-        midiPresence.type = "peaking";
-        midiPresence.frequency.value = 2800;
-        midiPresence.Q.value = 0.75;
-        midiPresence.gain.value = 3.8;
-        midiSynthComp = audioCtx.createDynamicsCompressor();
-        midiSynthComp.threshold.value = -22;
-        midiSynthComp.knee.value = 26;
-        midiSynthComp.ratio.value = 2.6;
-        midiSynthComp.attack.value = 0.004;
-        midiSynthComp.release.value = 0.22;
-        midiSynthGain.connect(midiSynthFilter);
-        midiSynthFilter.connect(midiPresence);
-        midiPresence.connect(midiSynthComp);
-        midiSynthComp.connect(audioCtx.destination);
-        const midiVerbPreDelay = audioCtx.createDelay();
-        midiVerbPreDelay.delayTime.value = 0.028;
-        midiVerbWet = audioCtx.createGain();
-        midiVerbWet.gain.value = 0.56;
-        const midiVerb = audioCtx.createConvolver();
-        if (!midiVerbBuffer) midiVerbBuffer = buildReverbImpulse(audioCtx, 2.35, 3.9);
-        midiVerb.buffer = midiVerbBuffer;
-        midiSynthComp.connect(midiVerbPreDelay);
-        midiVerbPreDelay.connect(midiVerbWet);
-        midiVerbWet.connect(midiVerb);
-        midiVerb.connect(audioCtx.destination);
-      }
-      stopMidiSynth();
-      const sorted = onsets.slice().sort((a, b) => a.t - b.t);
-      const nextByCh = new Map();
-      for (let i = sorted.length - 1; i >= 0; i -= 1) {
-        const ch = sorted[i].ch ?? 0;
-        const next = nextByCh.get(ch);
-        sorted[i]._gap = next ? Math.max(0.02, next.t - sorted[i].t) : 0.12;
-        nextByCh.set(ch, sorted[i]);
-      }
-      midiScheduleOnsets = sorted;
-      midiScheduleCursor = 0;
-      midiScheduleSongOffset = Math.max(0, pauseOffset || 0);
-
-      const scheduleOne = (o, at) => {
-        const freq = 440 * Math.pow(2, (o.note - 69) / 12);
-        const vel = Math.max(0.18, Math.min(1, o.v ?? 0.7));
-        const role = o.role || "melody";
-        const gap = o._gap || 0.12;
-        const dur = role === "bass"
-          ? Math.max(0.2, Math.min(0.9, gap * 1.3))
-          : Math.max(0.16, Math.min(0.76, gap * 1.08));
-        const release = role === "bass" ? 0.38 : 0.3;
-
-        const voiceGain = audioCtx.createGain();
-        const amp = role === "bass" ? 0.16 : (role === "rhythm" ? 0.128 : 0.152);
-        voiceGain.gain.setValueAtTime(0.0001, at);
-        voiceGain.gain.linearRampToValueAtTime(amp * vel, at + 0.0045);
-        voiceGain.gain.exponentialRampToValueAtTime(Math.max(0.0002, amp * vel * 0.44), at + 0.11);
-        voiceGain.gain.exponentialRampToValueAtTime(0.0001, at + dur + release);
-
-        const baseFreq = role === "bass" ? freq * 0.5 : freq;
-        const bodyOsc = audioCtx.createOscillator();
-        bodyOsc.setPeriodicWave(getMidiPianoWave(audioCtx));
-        bodyOsc.frequency.setValueAtTime(baseFreq, at);
-
-        const shimmerOsc = audioCtx.createOscillator();
-        shimmerOsc.type = "sine";
-        shimmerOsc.frequency.setValueAtTime(baseFreq * 2.01, at);
-        shimmerOsc.detune.setValueAtTime((Math.random() * 8 - 4), at);
-        const shimmerGain = audioCtx.createGain();
-        shimmerGain.gain.setValueAtTime(role === "bass" ? 0.03 : 0.052, at);
-        shimmerGain.gain.exponentialRampToValueAtTime(0.0001, at + Math.min(0.24, dur * 0.7));
-
-        const hammer = audioCtx.createBufferSource();
-        hammer.buffer = getMidiNoiseBuffer(audioCtx);
-        const hammerBand = audioCtx.createBiquadFilter();
-        hammerBand.type = "bandpass";
-        hammerBand.frequency.value = role === "bass" ? 980 : 3100;
-        hammerBand.Q.value = 0.85;
-        const hammerGain = audioCtx.createGain();
-        hammerGain.gain.setValueAtTime(0.0001, at);
-        hammerGain.gain.linearRampToValueAtTime(0.045 * vel, at + 0.002);
-        hammerGain.gain.exponentialRampToValueAtTime(0.0001, at + 0.045);
-
-        const noteHighpass = audioCtx.createBiquadFilter();
-        noteHighpass.type = "highpass";
-        noteHighpass.frequency.value = role === "bass" ? 42 : 88;
-        const noteLowpass = audioCtx.createBiquadFilter();
-        noteLowpass.type = "lowpass";
-        noteLowpass.frequency.setValueAtTime(Math.min(10500, 1900 + baseFreq * 7.6), at);
-        noteLowpass.Q.value = 0.5;
-
-        bodyOsc.connect(voiceGain);
-        shimmerOsc.connect(shimmerGain);
-        shimmerGain.connect(voiceGain);
-        hammer.connect(hammerBand);
-        hammerBand.connect(hammerGain);
-        hammerGain.connect(voiceGain);
-        voiceGain.connect(noteHighpass);
-        noteHighpass.connect(noteLowpass);
-
-        if (typeof audioCtx.createStereoPanner === "function") {
-          const pan = audioCtx.createStereoPanner();
-          pan.pan.value = (Math.random() * 2 - 1) * 0.2;
-          noteLowpass.connect(pan);
-          pan.connect(midiSynthGain);
-        } else {
-          noteLowpass.connect(midiSynthGain);
-        }
-
-        bodyOsc.start(at);
-        shimmerOsc.start(at);
-        hammer.start(at);
-        hammer.stop(at + 0.055);
-        bodyOsc.stop(at + dur + release + 0.05);
-        shimmerOsc.stop(at + Math.min(0.28, dur + 0.14));
-        midiSynthNodes.push(bodyOsc, shimmerOsc, hammer);
-      };
-
-      const tick = () => {
-        if (!midiScheduleOnsets || paused) return;
-        const now = audioCtx.currentTime;
-        const horizon = now + 0.36;
-        while (midiScheduleCursor < midiScheduleOnsets.length) {
-          const o = midiScheduleOnsets[midiScheduleCursor];
-          const at = startTime + (o.t - midiScheduleSongOffset);
-          if (at > horizon) break;
-          if (at >= now - 0.03) scheduleOne(o, at);
-          midiScheduleCursor += 1;
-        }
-        if (midiScheduleCursor >= midiScheduleOnsets.length && midiScheduleTimer) {
-          clearInterval(midiScheduleTimer);
-          midiScheduleTimer = null;
-        }
-      };
-
-      tick();
-      midiScheduleTimer = setInterval(tick, 34);
-    }
-
-    function computeScrollTimeFromBpm(bpm, source = "audio") {
-      const safeBpm = Math.max(70, Math.min(220, bpm || 120));
-      if (source === "midi") {
-        return Math.max(0.96, Math.min(1.7, 168 / safeBpm));
-      }
-      return Math.max(1.18, Math.min(2.2, 210 / safeBpm));
-    }
-
-    function buildReverbImpulse(ctx, seconds = 1.1, decay = 2.6) {
-      const rate = ctx.sampleRate;
-      const length = Math.floor(rate * seconds);
-      const impulse = ctx.createBuffer(2, length, rate);
-      for (let c = 0; c < 2; c += 1) {
-        const data = impulse.getChannelData(c);
-        for (let i = 0; i < length; i += 1) {
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
-        }
-      }
-      return impulse;
-    }
-
-    function fftInPlace(re, im) {
-      const n = re.length;
-      for (let i = 1, j = 0; i < n; i += 1) {
-        let bit = n >> 1;
-        for (; j & bit; bit >>= 1) j ^= bit;
-        j ^= bit;
-        if (i < j) {
-          const tr = re[i];
-          re[i] = re[j];
-          re[j] = tr;
-          const ti = im[i];
-          im[i] = im[j];
-          im[j] = ti;
-        }
-      }
-      for (let len = 2; len <= n; len <<= 1) {
-        const ang = -2 * Math.PI / len;
-        const wlenCos = Math.cos(ang);
-        const wlenSin = Math.sin(ang);
-        for (let i = 0; i < n; i += len) {
-          let wCos = 1;
-          let wSin = 0;
-          for (let j = 0; j < len / 2; j += 1) {
-            const uRe = re[i + j];
-            const uIm = im[i + j];
-            const vRe = re[i + j + len / 2] * wCos - im[i + j + len / 2] * wSin;
-            const vIm = re[i + j + len / 2] * wSin + im[i + j + len / 2] * wCos;
-            re[i + j] = uRe + vRe;
-            im[i + j] = uIm + vIm;
-            re[i + j + len / 2] = uRe - vRe;
-            im[i + j + len / 2] = uIm - vIm;
-            const nextCos = wCos * wlenCos - wSin * wlenSin;
-            const nextSin = wCos * wlenSin + wSin * wlenCos;
-            wCos = nextCos;
-            wSin = nextSin;
-          }
+    function fillBoard() {
+      board = createEmptyBoard();
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          let color;
+          do {
+            color = randColor();
+          } while (hasMatchAt(r, c, color));
+          board[r][c] = color;
         }
       }
     }
 
-    function estimateKeyFromBuffer(buffer) {
-      const mono = toMono(buffer);
-      const sr = buffer.sampleRate;
-      const size = 2048;
-      const hop = 4096;
-      const maxFrames = 120;
-      const chroma = new Float32Array(12);
-      const re = new Float32Array(size);
-      const im = new Float32Array(size);
-      const hann = new Float32Array(size);
-      for (let i = 0; i < size; i += 1) {
-        hann[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (size - 1)));
-      }
-
-      const step = Math.max(hop, Math.floor(mono.length / maxFrames));
-      for (let start = 0; start + size < mono.length; start += step) {
-        for (let i = 0; i < size; i += 1) {
-          re[i] = mono[start + i] * hann[i];
-          im[i] = 0;
-        }
-        fftInPlace(re, im);
-        const freqRes = sr / size;
-        for (let bin = 2; bin < size / 2; bin += 1) {
-          const freq = bin * freqRes;
-          if (freq < 60 || freq > 4000) continue;
-          const mag = re[bin] * re[bin] + im[bin] * im[bin];
-          const pitch = 12 * Math.log2(freq / 440) + 9;
-          const pc = ((Math.round(pitch) % 12) + 12) % 12;
-          chroma[pc] += mag;
+    function renderBoard() {
+      boardEl.innerHTML = "";
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const tile = document.createElement("div");
+          tile.className = "tile";
+          tile.dataset.row = r;
+          tile.dataset.col = c;
+          const color = colors[board[r][c]];
+          tile.style.background = color.bg;
+          tile.textContent = color.label;
+          boardEl.appendChild(tile);
         }
       }
-
-      const total = chroma.reduce((a, b) => a + b, 0);
-      if (total <= 0) return { label: "-", root: 9, mode: "major" };
-      for (let i = 0; i < 12; i += 1) chroma[i] /= total;
-
-      const majorProfile = [0.748, 0.06, 0.488, 0.082, 0.67, 0.46, 0.096, 0.715, 0.104, 0.366, 0.057, 0.4];
-      const minorProfile = [0.712, 0.084, 0.474, 0.618, 0.049, 0.46, 0.105, 0.747, 0.404, 0.067, 0.133, 0.33];
-      const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-      let best = { score: -1, root: 0, mode: "major" };
-
-      for (let root = 0; root < 12; root += 1) {
-        let scoreMaj = 0;
-        let scoreMin = 0;
-        for (let i = 0; i < 12; i += 1) {
-          const idx = (i + root) % 12;
-          scoreMaj += chroma[idx] * majorProfile[i];
-          scoreMin += chroma[idx] * minorProfile[i];
-        }
-        if (scoreMaj > best.score) best = { score: scoreMaj, root, mode: "major" };
-        if (scoreMin > best.score) best = { score: scoreMin, root, mode: "minor" };
-      }
-
-      const label = `${noteNames[best.root]} ${best.mode === "major" ? "major" : "minor"}`;
-      return { label, root: best.root, mode: best.mode };
     }
 
-    function playHitSound(kind) {
-      const audioCtx = ensureAudioContext();
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume().catch(() => {});
-      }
-      const now = audioCtx.currentTime;
-      const baseRoot = keyBaseFreq || 1760;
-      const base = kind === "perfect" ? baseRoot * 1.18 : baseRoot;
-      const partials = [1, 2.1, 2.9, 4.1, 5.3];
-      const gains = [0.16, 0.1, 0.07, 0.05, 0.035];
-      const output = audioCtx.createGain();
-      const dry = audioCtx.createGain();
-      const wet = audioCtx.createGain();
-      const convolver = audioCtx.createConvolver();
-      if (!convolver.buffer) convolver.buffer = buildReverbImpulse(audioCtx, 1.3, 3.2);
-      output.gain.setValueAtTime(0.0001, now);
-      output.gain.exponentialRampToValueAtTime(0.6 * sfxVolume, now + 0.01);
-      output.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
-      dry.gain.value = 0.35;
-      wet.gain.value = 1.1;
-      output.connect(dry);
-      output.connect(convolver);
-      convolver.connect(wet);
-      dry.connect(audioCtx.destination);
-      wet.connect(audioCtx.destination);
-
-      for (let i = 0; i < partials.length; i += 1) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(base * partials[i], now);
-        osc.frequency.exponentialRampToValueAtTime(base * partials[i] * 0.985, now + 0.12);
-        gain.gain.setValueAtTime(gains[i], now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55 + i * 0.06);
-        osc.connect(gain);
-        gain.connect(output);
-        osc.start(now);
-        osc.stop(now + 0.6 + i * 0.06);
-      }
-
-      // Brushed sparkle: longer, smoother high-band noise tail.
-      const noiseDur = 0.65;
-      const noiseBuffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * noiseDur), audioCtx.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < data.length; i += 1) {
-        data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
-      }
-      const noise = audioCtx.createBufferSource();
-      noise.buffer = noiseBuffer;
-      const bp = audioCtx.createBiquadFilter();
-      bp.type = "bandpass";
-      bp.frequency.value = 8200;
-      bp.Q.value = 0.4;
-      const lp = audioCtx.createBiquadFilter();
-      lp.type = "lowpass";
-      lp.frequency.value = 11000;
-      const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.0001, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.32 * sfxVolume, now + 0.02);
-      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
-      noise.connect(bp);
-      bp.connect(lp);
-      lp.connect(noiseGain);
-      noiseGain.connect(output);
-      noise.start(now);
-      noise.stop(now + noiseDur);
+    function updateStats() {
+      scoreEl.textContent = score;
+      movesEl.textContent = moves;
+      targetEl.textContent = target;
     }
 
-    function startHoldSustain(lane, note) {
-      const audioCtx = ensureAudioContext();
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume().catch(() => {});
-      }
-      const ensureHoldSustainBus = () => {
-        if (holdSustainBus) return holdSustainBus;
-        const input = audioCtx.createGain();
-        const dry = audioCtx.createGain();
-        const wet = audioCtx.createGain();
-        const convolver = audioCtx.createConvolver();
-        if (!holdReverbBuffer) holdReverbBuffer = buildReverbImpulse(audioCtx, 0.9, 2.7);
-        convolver.buffer = holdReverbBuffer;
-        dry.gain.value = 0.44;
-        wet.gain.value = 0.56;
-        input.connect(dry);
-        input.connect(convolver);
-        convolver.connect(wet);
-        dry.connect(audioCtx.destination);
-        wet.connect(audioCtx.destination);
-        holdSustainBus = { input, dry, wet, convolver };
-        return holdSustainBus;
-      };
-      const now = audioCtx.currentTime;
-      // Keep hold timbre close to hit SFX: bright, high, bell-like.
-      const laneOffsets = [0, 2, 5, 7, 9, 12, 14, 17];
-      const laneSemi = laneOffsets[lane % laneOffsets.length] || 0;
-      const base = (keyBaseFreq || 1760) * Math.pow(2, laneSemi / 12);
-      const output = audioCtx.createGain();
-      output.gain.setValueAtTime(0.0001, now);
-      output.gain.exponentialRampToValueAtTime(Math.max(0.002, 0.14 * sfxVolume), now + 0.05);
-      output.connect(ensureHoldSustainBus().input);
-
-      const partials = [1, 2.1];
-      const levels = [0.068, 0.042];
-      const oscs = [];
-      const gains = [];
-      for (let i = 0; i < partials.length; i += 1) {
-        const osc = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(base * partials[i], now);
-        osc.detune.setValueAtTime((Math.random() * 4 - 2), now);
-        g.gain.setValueAtTime(levels[i], now);
-        osc.connect(g);
-        g.connect(output);
-        osc.start(now);
-        oscs.push(osc);
-        gains.push(g);
-      }
-
-      return { output, oscs, gains, lfo: null, lfoGain: null };
+    function setMessage(text) {
+      messageEl.textContent = text || "";
     }
 
-    function stopHoldSustain(holdEntry) {
-      if (!holdEntry || !holdEntry.sustain) return;
-      const audioCtx = ensureAudioContext();
-      const now = audioCtx.currentTime;
-      const s = holdEntry.sustain;
-      try {
-        s.output.gain.cancelScheduledValues(now);
-        s.output.gain.setValueAtTime(Math.max(0.0001, s.output.gain.value || 0.02), now);
-        s.output.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-        for (const osc of s.oscs || []) osc.stop(now + 0.14);
-        if (s.lfo) s.lfo.stop(now + 0.14);
-      } catch {}
-      holdEntry.sustain = null;
+    function clearSelection() {
+      if (!selected) return;
+      const tile = getTileEl(selected.r, selected.c);
+      if (tile) tile.classList.remove("selected");
+      selected = null;
     }
 
-    function resetScore() {
-      score = 0;
-      combo = 0;
-      nextMissIndex = 0;
-      activeHolds = new Array(laneCount).fill(null);
-      ui.score.textContent = "0";
-      ui.combo.textContent = "0";
+    function getTileEl(r, c) {
+      return boardEl.querySelector(`[data-row="${r}"][data-col="${c}"]`);
     }
 
-    function stopGame() {
-      running = false;
-      cancelAnimationFrame(rafId);
-      paused = false;
-      stopMidiSynth();
-      for (const ah of activeHolds) {
-        if (ah) stopHoldSustain(ah);
-      }
-      activeHolds = new Array(laneCount).fill(null);
-      if (sourceNode) {
-        sourceNode.onended = null;
-        sourceNode.stop(0);
-        sourceNode.disconnect();
-        sourceNode = null;
-      }
+    function isAdjacent(a, b) {
+      return Math.abs(a.r - b.r) + Math.abs(a.c - b.c) === 1;
     }
 
-    function toMono(buffer) {
-      const channels = buffer.numberOfChannels;
-      const length = buffer.length;
-      const mono = new Float32Array(length);
-      for (let c = 0; c < channels; c += 1) {
-        const data = buffer.getChannelData(c);
-        for (let i = 0; i < length; i += 1) mono[i] += data[i] / channels;
-      }
-      return mono;
+    function swap(a, b) {
+      const temp = board[a.r][a.c];
+      board[a.r][a.c] = board[b.r][b.c];
+      board[b.r][b.c] = temp;
     }
 
-    function movingAverage(values, radius) {
-      const out = new Float32Array(values.length);
-      let sum = 0;
-      for (let i = 0; i < values.length; i += 1) {
-        sum += values[i];
-        if (i > radius) sum -= values[i - radius - 1];
-        const size = Math.min(i + 1, radius + 1);
-        out[i] = sum / size;
-      }
-      return out;
-    }
+    function findMatches() {
+      const matches = Array.from({ length: rows }, () => Array(cols).fill(false));
+      let found = false;
 
-    function preEmphasis(input, coeff = 0.97) {
-      const out = new Float32Array(input.length);
-      if (!input.length) return out;
-      out[0] = input[0];
-      for (let i = 1; i < input.length; i += 1) {
-        out[i] = input[i] - coeff * input[i - 1];
-      }
-      return out;
-    }
-
-    async function filterDrumBand(buffer) {
-      const offline = new OfflineAudioContext(1, buffer.length, buffer.sampleRate);
-      const source = offline.createBufferSource();
-      source.buffer = buffer;
-      const hp = offline.createBiquadFilter();
-      hp.type = "highpass";
-      hp.frequency.value = 60;
-      hp.Q.value = 0.707;
-      const lp = offline.createBiquadFilter();
-      lp.type = "lowpass";
-      lp.frequency.value = 2400;
-      lp.Q.value = 0.707;
-      source.connect(hp);
-      hp.connect(lp);
-      lp.connect(offline.destination);
-      source.start(0);
-      return offline.startRendering();
-    }
-
-    async function filterBassBand(buffer) {
-      const offline = new OfflineAudioContext(1, buffer.length, buffer.sampleRate);
-      const source = offline.createBufferSource();
-      source.buffer = buffer;
-      const hp = offline.createBiquadFilter();
-      hp.type = "highpass";
-      hp.frequency.value = 40;
-      hp.Q.value = 0.707;
-      const lp = offline.createBiquadFilter();
-      lp.type = "lowpass";
-      lp.frequency.value = 260;
-      lp.Q.value = 0.707;
-      source.connect(hp);
-      hp.connect(lp);
-      lp.connect(offline.destination);
-      source.start(0);
-      return offline.startRendering();
-    }
-
-    async function filterGuitarBand(buffer) {
-      const offline = new OfflineAudioContext(1, buffer.length, buffer.sampleRate);
-      const source = offline.createBufferSource();
-      source.buffer = buffer;
-      const hp = offline.createBiquadFilter();
-      hp.type = "highpass";
-      hp.frequency.value = 140;
-      hp.Q.value = 0.707;
-      const lp = offline.createBiquadFilter();
-      lp.type = "lowpass";
-      lp.frequency.value = 5200;
-      lp.Q.value = 0.707;
-      source.connect(hp);
-      hp.connect(lp);
-      lp.connect(offline.destination);
-      source.start(0);
-      return offline.startRendering();
-    }
-
-    async function filterPianoBand(buffer) {
-      const offline = new OfflineAudioContext(1, buffer.length, buffer.sampleRate);
-      const source = offline.createBufferSource();
-      source.buffer = buffer;
-      const hp = offline.createBiquadFilter();
-      hp.type = "highpass";
-      hp.frequency.value = 120;
-      hp.Q.value = 0.707;
-      const lp = offline.createBiquadFilter();
-      lp.type = "lowpass";
-      lp.frequency.value = 6500;
-      lp.Q.value = 0.707;
-      source.connect(hp);
-      hp.connect(lp);
-      lp.connect(offline.destination);
-      source.start(0);
-      return offline.startRendering();
-    }
-
-    async function filterVocalBand(buffer) {
-      const offline = new OfflineAudioContext(1, buffer.length, buffer.sampleRate);
-      const source = offline.createBufferSource();
-      source.buffer = buffer;
-      const hp = offline.createBiquadFilter();
-      hp.type = "highpass";
-      hp.frequency.value = 160;
-      hp.Q.value = 0.707;
-      const lp = offline.createBiquadFilter();
-      lp.type = "lowpass";
-      lp.frequency.value = 3400;
-      lp.Q.value = 0.707;
-      source.connect(hp);
-      hp.connect(lp);
-      lp.connect(offline.destination);
-      source.start(0);
-      return offline.startRendering();
-    }
-
-    function analyzeOnsets(buffer, opts = {}) {
-      const sensitivity = opts.sensitivity || 1;
-      const mono = toMono(buffer);
-      const emphasized = preEmphasis(mono);
-      const sr = buffer.sampleRate;
-      const frame = 1024;
-      const hop = 512;
-      const totalFrames = Math.floor((mono.length - frame) / hop);
-      const energy = new Float32Array(totalFrames);
-
-      for (let i = 0; i < totalFrames; i += 1) {
-        const start = i * hop;
-        let e = 0;
-        for (let j = 0; j < frame; j += 1) {
-          const v = emphasized[start + j];
-          e += v * v;
-        }
-        energy[i] = Math.sqrt(e / frame);
-      }
-
-      const smooth = movingAverage(energy, 8);
-      const novelty = new Float32Array(totalFrames);
-      for (let i = 1; i < totalFrames; i += 1) {
-        novelty[i] = Math.max(0, Math.log1p(smooth[i]) - Math.log1p(smooth[i - 1]));
-      }
-
-      const local = movingAverage(novelty, 30);
-      let mean = 0;
-      for (let i = 0; i < novelty.length; i += 1) mean += novelty[i];
-      mean /= Math.max(1, novelty.length);
-      let variance = 0;
-      for (let i = 0; i < novelty.length; i += 1) {
-        const d = novelty[i] - mean;
-        variance += d * d;
-      }
-      const std = Math.sqrt(variance / Math.max(1, novelty.length));
-      const peaks = [];
-      let lastPeakTime = -999;
-      for (let i = 2; i < novelty.length - 2; i += 1) {
-        const th = local[i] * (1.4 / sensitivity) + std * (0.25 / sensitivity) + 0.0009 / sensitivity;
-        const isPeak = novelty[i] > th &&
-          novelty[i] > novelty[i - 1] &&
-          novelty[i] >= novelty[i + 1];
-        if (!isPeak) continue;
-
-        const t = (i * hop) / sr;
-        if (t - lastPeakTime < 0.075) continue;
-        peaks.push({ t, v: novelty[i] });
-        lastPeakTime = t;
-      }
-      return peaks;
-    }
-
-    function mergeOnsetsWeighted(lists, weights, mergeWindow = 0.045) {
-      const all = [];
-      for (const [mode, onsets] of Object.entries(lists)) {
-        const w = weights[mode] || 1;
-        for (const o of onsets) {
-          all.push({ t: o.t, v: o.v * w });
-        }
-      }
-      all.sort((a, b) => a.t - b.t);
-      const merged = [];
-      for (const o of all) {
-        const last = merged[merged.length - 1];
-        if (last && Math.abs(o.t - last.t) < mergeWindow) {
-          last.t = (last.t * last.v + o.t * o.v) / (last.v + o.v);
-          last.v += o.v;
-        } else {
-          merged.push({ t: o.t, v: o.v });
-        }
-      }
-      return merged;
-    }
-
-    function parseMidi(arrayBuffer) {
-      const data = new DataView(arrayBuffer);
-      let idx = 0;
-      const readStr = (n) => {
-        let s = "";
-        for (let i = 0; i < n; i += 1) s += String.fromCharCode(data.getUint8(idx++));
-        return s;
-      };
-      const readU32 = () => {
-        const v = data.getUint32(idx);
-        idx += 4;
-        return v;
-      };
-      const readU16 = () => {
-        const v = data.getUint16(idx);
-        idx += 2;
-        return v;
-      };
-      const readVar = () => {
-        let v = 0;
-        while (true) {
-          const b = data.getUint8(idx++);
-          v = (v << 7) | (b & 0x7f);
-          if ((b & 0x80) === 0) break;
-        }
-        return v;
-      };
-
-      if (readStr(4) !== "MThd") throw new Error("Invalid MIDI header");
-      const headerLen = readU32();
-      const format = readU16();
-      const ntrks = readU16();
-      const division = readU16();
-      idx += Math.max(0, headerLen - 6);
-      if (division & 0x8000) throw new Error("SMPTE MIDI not supported");
-      const ticksPerBeat = division;
-
-      const noteOns = [];
-      const tempos = [];
-      const timesigs = [];
-      let maxTick = 0;
-      const channelPrograms = new Array(16).fill(0);
-
-      for (let t = 0; t < ntrks; t += 1) {
-        if (readStr(4) !== "MTrk") throw new Error("Invalid MIDI track");
-        const trackLen = readU32();
-        const trackEnd = idx + trackLen;
-        let tick = 0;
-        let runningStatus = 0;
-        while (idx < trackEnd) {
-          const delta = readVar();
-          tick += delta;
-          if (tick > maxTick) maxTick = tick;
-          let status = data.getUint8(idx++);
-          let firstData = null;
-          if (status < 0x80) {
-            firstData = status;
-            status = runningStatus;
+      for (let r = 0; r < rows; r++) {
+        let streak = 1;
+        for (let c = 1; c <= cols; c++) {
+          if (c < cols && board[r][c] === board[r][c - 1]) {
+            streak++;
           } else {
-            runningStatus = status;
-          }
-          if (status === 0xff) {
-            const type = data.getUint8(idx++);
-            const len = readVar();
-            if (type === 0x51 && len === 3) {
-              const mpqn = (data.getUint8(idx) << 16) | (data.getUint8(idx + 1) << 8) | data.getUint8(idx + 2);
-              tempos.push({ tick, mpqn });
-            } else if (type === 0x58 && len >= 4) {
-              const nn = data.getUint8(idx);
-              const dd = data.getUint8(idx + 1);
-              const denom = Math.pow(2, dd);
-              timesigs.push({ tick, nn, denom });
-            }
-            idx += len;
-            continue;
-          }
-          if (status === 0xf0 || status === 0xf7) {
-            const len = readVar();
-            idx += len;
-            continue;
-          }
-          const type = status & 0xf0;
-          const channel = status & 0x0f;
-          const data1 = firstData !== null ? firstData : data.getUint8(idx++);
-          const data2 = (type === 0xc0 || type === 0xd0) ? null : data.getUint8(idx++);
-          if (type === 0xc0) {
-            channelPrograms[channel] = data1;
-          }
-          if (type === 0x90 && data2 !== null && data2 > 0) {
-            noteOns.push({
-              tick,
-              note: data1,
-              vel: data2,
-              ch: channel,
-              prog: channelPrograms[channel] ?? 0
-            });
-          }
-        }
-      }
-
-      if (!tempos.length) tempos.push({ tick: 0, mpqn: 500000 });
-      tempos.sort((a, b) => a.tick - b.tick);
-      if (tempos[0].tick !== 0) tempos.unshift({ tick: 0, mpqn: 500000 });
-
-      const segments = [];
-      let secAcc = 0;
-      for (let i = 0; i < tempos.length; i += 1) {
-        const cur = tempos[i];
-        const next = tempos[i + 1];
-        segments.push({ tick: cur.tick, sec: secAcc, mpqn: cur.mpqn });
-        if (next) {
-          const dt = next.tick - cur.tick;
-          secAcc += (dt * cur.mpqn) / 1e6 / ticksPerBeat;
-        }
-      }
-
-      const tickToSec = (tickVal) => {
-        let seg = segments[0];
-        for (let i = 0; i < segments.length; i += 1) {
-          if (segments[i].tick <= tickVal) seg = segments[i];
-          else break;
-        }
-        const dt = tickVal - seg.tick;
-        return seg.sec + (dt * seg.mpqn) / 1e6 / ticksPerBeat;
-      };
-
-      const onsets = noteOns.map((n) => ({
-        t: tickToSec(n.tick),
-        v: n.vel / 127,
-        note: n.note,
-        ch: n.ch,
-        prog: n.prog ?? 0
-      }));
-
-      const bpm = Math.round(60 * 1e6 / tempos[0].mpqn);
-      let timeSig = null;
-      if (timesigs.length) {
-        const ts = timesigs.sort((a, b) => a.tick - b.tick)[0];
-        timeSig = `${ts.nn}/${ts.denom}`;
-      }
-      const duration = tickToSec(maxTick);
-      return { onsets, bpm, timeSig, duration };
-    }
-
-    function buildChartFromMidi(onsets, bpm, density, rng = Math.random) {
-      if (!onsets.length) return [];
-      const sorted = onsets.slice().sort((a, b) => a.t - b.t);
-      const notes = [];
-      const timeColor = new Map();
-      const colorForTime = (t) => {
-        const key = t.toFixed(3);
-        if (!timeColor.has(key)) timeColor.set(key, toneColor(rng));
-        return timeColor.get(key);
-      };
-      let laneCursor = 0;
-      const groupWindow = 0.02;
-      let i = 0;
-      while (i < sorted.length) {
-        const t0 = sorted[i].t;
-        const group = [];
-        while (i < sorted.length && sorted[i].t - t0 <= groupWindow) {
-          group.push(sorted[i]);
-          i += 1;
-        }
-        group.sort((a, b) => a.note - b.note);
-        const c = colorForTime(t0);
-        for (let j = 0; j < group.length; j += 1) {
-          const lane = group.length <= laneCount
-            ? (group.length === 1 ? laneCursor % laneCount : Math.round(j * (laneCount - 1) / (group.length - 1)))
-            : (j % laneCount);
-          const extraStep = Math.floor(j / laneCount);
-          const t = t0 + extraStep * 0.01;
-          notes.push({ t, lane, type: "tap", color: c });
-        }
-        laneCursor += 1;
-      }
-      const withHolds = injectHolds(notes.sort((a, b) => a.t - b.t), bpm, rng);
-      const barSec = (60 / Math.max(60, bpm || 120)) * barBeats;
-      const riffSource = sorted.filter((o) => o.role === "rhythm" || o.role === "melody");
-      const riffMap = buildRiffTemplateMap(riffSource.length ? riffSource : sorted, barSec);
-      return enforceDifficultyComplexity(applyRiffReuse(withHolds, riffMap, barSec), bpm, barSec, rng);
-    }
-
-    function filterMidiOnsets(onsets, mode) {
-      if (!onsets || !onsets.length) return [];
-      const byChannel = new Map();
-      for (const o of onsets) {
-        const ch = o.ch ?? 0;
-        if (!byChannel.has(ch)) byChannel.set(ch, []);
-        byChannel.get(ch).push(o);
-      }
-      const counts = Array.from(byChannel.entries()).map(([ch, list]) => ({ ch, count: list.length }));
-      counts.sort((a, b) => b.count - a.count);
-      const drumCh = 9;
-      const topMelody = counts.find((c) => c.ch !== drumCh) || counts[0];
-      const secondMelody = counts.filter((c) => c.ch !== drumCh)[1];
-      const pick = (chs) => {
-        const filtered = [];
-        for (const o of onsets) if (chs.has(o.ch ?? 0)) filtered.push(o);
-        return filtered;
-      };
-      if (mode === "drums") return pick(new Set([drumCh]));
-      if (mode === "drums_plus") {
-        const set = new Set([drumCh]);
-        if (topMelody) set.add(topMelody.ch);
-        return pick(set);
-      }
-      if (mode === "melody") return pick(new Set([topMelody?.ch ?? 0]));
-      if (mode === "melody_harmony") {
-        const set = new Set([topMelody?.ch ?? 0]);
-        if (secondMelody) set.add(secondMelody.ch);
-        return pick(set);
-      }
-      if (mode === "auto") {
-        const set = new Set([topMelody?.ch ?? 0]);
-        const drumCount = counts.find((c) => c.ch === drumCh)?.count || 0;
-        if (drumCount > (topMelody?.count || 0) * 0.35) set.add(drumCh);
-        return pick(set);
-      }
-      return onsets;
-    }
-
-    function classifyProgram(prog) {
-      if (prog >= 0 && prog <= 7) return "piano";
-      if (prog >= 24 && prog <= 31) return "guitar";
-      if (prog >= 32 && prog <= 39) return "bass";
-      if (prog >= 80 && prog <= 87) return "lead";
-      return "other";
-    }
-
-    function pickDominantProgram(progCounts) {
-      let best = 0;
-      let bestCount = -1;
-      for (const [prog, count] of progCounts.entries()) {
-        if (count > bestCount) {
-          best = prog;
-          bestCount = count;
-        }
-      }
-      return best;
-    }
-
-    function selectMidiPlaybackOnsets(onsets, durationSec) {
-      if (!onsets || !onsets.length) return [];
-      const byChannel = new Map();
-      for (const o of onsets) {
-        const ch = o.ch ?? 0;
-        if (ch === 9) continue;
-        let info = byChannel.get(ch);
-        if (!info) {
-          info = {
-            ch,
-            notes: [],
-            count: 0,
-            sumPitch: 0,
-            sumVel: 0,
-            minPitch: 128,
-            maxPitch: 0,
-            progCounts: new Map()
-          };
-          byChannel.set(ch, info);
-        }
-        info.notes.push(o);
-        info.count += 1;
-        info.sumPitch += o.note;
-        info.sumVel += o.v ?? 0.6;
-        if (o.note < info.minPitch) info.minPitch = o.note;
-        if (o.note > info.maxPitch) info.maxPitch = o.note;
-        const prog = o.prog ?? 0;
-        info.progCounts.set(prog, (info.progCounts.get(prog) || 0) + 1);
-      }
-
-      const channels = Array.from(byChannel.values()).map((info) => {
-        const ordered = info.notes.slice().sort((a, b) => a.t - b.t);
-        const unique = new Set();
-        let samePitch = 0;
-        let intervalSum = 0;
-        let intervalSq = 0;
-        let intervalCount = 0;
-        let prevNote = null;
-        for (const n of ordered) {
-          unique.add(n.note);
-          if (prevNote) {
-            const d = Math.abs(n.note - prevNote.note);
-            intervalSum += d;
-            intervalSq += d * d;
-            intervalCount += 1;
-            if (n.note === prevNote.note) samePitch += 1;
-          }
-          prevNote = n;
-        }
-        const uniqueRatio = unique.size / Math.max(1, info.count);
-        const avgInterval = intervalCount ? intervalSum / intervalCount : 0;
-        const intervalVar = intervalCount ? Math.max(0, intervalSq / intervalCount - avgInterval * avgInterval) : 0;
-        const intervalStd = Math.sqrt(intervalVar);
-        const repeatRatio = intervalCount ? samePitch / intervalCount : 1;
-        const density = info.count / Math.max(4, durationSec || 240);
-        const avgPitch = info.sumPitch / info.count;
-        const avgVel = info.sumVel / info.count;
-        const range = info.maxPitch - info.minPitch;
-        const domProg = pickDominantProgram(info.progCounts);
-        const type = classifyProgram(domProg);
-        const melodicScore =
-          uniqueRatio * 2.2 +
-          Math.min(1.2, range / 24) * 0.9 +
-          Math.min(1.4, avgInterval / 6) * 0.7 +
-          Math.min(1.2, intervalStd / 6) * 0.7 +
-          Math.min(1.2, density / 6) * 0.2 -
-          repeatRatio * 2.0;
-        return {
-          ...info,
-          avgPitch,
-          avgVel,
-          range,
-          domProg,
-          type,
-          uniqueRatio,
-          repeatRatio,
-          avgInterval,
-          intervalStd,
-          density,
-          melodicScore
-        };
-      });
-      if (!channels.length) return [];
-
-      let bass = channels.filter((c) => c.type === "bass");
-      let bassCh = null;
-      if (bass.length) {
-        bass.sort((a, b) => b.count - a.count);
-        bassCh = bass[0].ch;
-      } else {
-        const sorted = channels.slice().sort((a, b) => a.avgPitch - b.avgPitch);
-        bassCh = sorted[0].ch;
-      }
-
-      const leadCandidates = channels.filter((c) => c.type === "lead");
-      let melodyCh = null;
-      if (leadCandidates.length) {
-        leadCandidates.sort((a, b) => b.melodicScore - a.melodicScore);
-        melodyCh = leadCandidates[0].ch;
-      } else {
-        const melodyCandidates = channels
-          .filter((c) => c.ch !== bassCh)
-          .sort((a, b) => b.melodicScore - a.melodicScore);
-        melodyCh = melodyCandidates[0]?.ch ?? bassCh;
-      }
-
-      let instrCandidates = channels.filter((c) => c.type === "piano" || c.type === "guitar");
-      instrCandidates = instrCandidates.filter((c) => c.ch !== melodyCh && c.ch !== bassCh);
-      instrCandidates.sort((a, b) => b.melodicScore - a.melodicScore);
-      let instrCh = instrCandidates[0]?.ch ?? null;
-      if (instrCh !== null) {
-        const picked = instrCandidates.find((c) => c.repeatRatio < 0.55 && c.uniqueRatio >= 0.18);
-        if (picked) instrCh = picked.ch;
-      }
-
-      const roleByChannel = new Map();
-      if (melodyCh !== null && melodyCh !== undefined) roleByChannel.set(melodyCh, "melody");
-      if (instrCh !== null && instrCh !== undefined && !roleByChannel.has(instrCh)) roleByChannel.set(instrCh, "rhythm");
-      if (bassCh !== null && bassCh !== undefined && !roleByChannel.has(bassCh)) roleByChannel.set(bassCh, "bass");
-      const selected = new Set(roleByChannel.keys());
-      const picked = [];
-      for (const o of onsets) {
-        const ch = o.ch ?? 0;
-        if (selected.has(ch)) {
-          picked.push({ ...o, role: roleByChannel.get(ch) || "melody" });
-        }
-      }
-      return picked.sort((a, b) => a.t - b.t);
-    }
-
-    function capNotes(notes, maxCount = 800) {
-      if (notes.length <= maxCount) return notes;
-      const sorted = notes.slice().sort((a, b) => a.t - b.t);
-      const holds = sorted.filter((n) => n.type === "hold");
-      const taps = sorted.filter((n) => n.type !== "hold");
-      let keepHold = Math.min(holds.length, Math.floor(maxCount * 0.15));
-      if (holds.length > 0 && maxCount >= 16) keepHold = Math.max(1, keepHold);
-      keepHold = Math.min(keepHold, maxCount);
-      const keepTap = Math.max(0, maxCount - keepHold);
-
-      const pickEvenly = (arr, count) => {
-        if (count <= 0 || arr.length === 0) return [];
-        if (arr.length <= count) return arr.slice();
-        const picked = [];
-        const stride = arr.length / count;
-        for (let i = 0; i < count; i += 1) {
-          const idx = Math.min(arr.length - 1, Math.floor(i * stride));
-          picked.push(arr[idx]);
-        }
-        return picked;
-      };
-
-      const capped = pickEvenly(holds, keepHold).concat(pickEvenly(taps, keepTap));
-      return capped.sort((a, b) => a.t - b.t);
-    }
-
-    function estimateBpmFromOnsets(onsets) {
-      if (onsets.length < 8) return 120;
-      const diffs = [];
-      for (let i = 1; i < onsets.length; i += 1) {
-        const d = onsets[i].t - onsets[i - 1].t;
-        if (d > 0.18 && d < 1.0) diffs.push(d);
-      }
-      if (!diffs.length) return 120;
-
-      const bins = new Map();
-      for (const d of diffs) {
-        const bpmA = 60 / d;
-        const candidates = [bpmA, bpmA * 2, bpmA / 2];
-        for (let bpm of candidates) {
-          while (bpm < 70) bpm *= 2;
-          while (bpm > 190) bpm /= 2;
-          const key = Math.round(bpm);
-          bins.set(key, (bins.get(key) || 0) + 1);
-        }
-      }
-
-      let best = 120;
-      let bestCount = -1;
-      for (const [b, count] of bins.entries()) {
-        if (count > bestCount) {
-          bestCount = count;
-          best = b;
-        }
-      }
-      return Math.min(190, Math.max(70, best));
-    }
-
-    function quantize(value, step) {
-      return Math.round(value / step) * step;
-    }
-
-    function estimateBeatPhase(onsets, bpm) {
-      if (onsets.length < 6) return 0;
-      const beat = 60 / bpm;
-      const grid = beat / 4;
-      const sigma = grid * 0.22;
-      let bestOffset = 0;
-      let bestScore = -1;
-      const samples = 24;
-      for (let i = 0; i < samples; i += 1) {
-        const offset = (i / samples) * grid;
-        let score = 0;
-        for (const o of onsets) {
-          const pos = (o.t - offset) % grid;
-          const dist = Math.min(pos, grid - pos);
-          const w = 0.6 + Math.min(1, o.v * 8);
-          score += Math.exp(-(dist * dist) / (2 * sigma * sigma)) * w;
-        }
-        if (score > bestScore) {
-          bestScore = score;
-          bestOffset = offset;
-        }
-      }
-      return bestOffset;
-    }
-
-    function parseTimeSig(value) {
-      if (value === "4/4") return { beats: 4, label: "4/4" };
-      if (value === "3/4") return { beats: 3, label: "3/4" };
-      if (value === "7/8") return { beats: 3.5, label: "7/8" };
-      if (value === "6/8") return { beats: 3, label: "6/8" };
-      if (value === "9/8") return { beats: 4.5, label: "9/8" };
-      if (value === "5/4") return { beats: 5, label: "5/4" };
-      if (value === "12/8") return { beats: 6, label: "12/8" };
-      return { beats: 4, label: "自动" };
-    }
-
-    function estimateTimeSignature(onsets, bpm) {
-      const beat = 60 / bpm;
-      const candidates = [
-        { beats: 4, label: "4/4" },
-        { beats: 3, label: "3/4" },
-        { beats: 3.5, label: "7/8" },
-        { beats: 3, label: "6/8" },
-        { beats: 4.5, label: "9/8" },
-        { beats: 5, label: "5/4" }
-        ,
-        { beats: 6, label: "12/8" }
-      ];
-
-      let best = candidates[0];
-      let bestScore = -1;
-      const bins = 16;
-      for (const c of candidates) {
-        const barSec = beat * c.beats;
-        const hist = new Array(bins).fill(0);
-        let total = 0;
-        for (const o of onsets) {
-          const pos = (o.t % barSec) / barSec;
-          const idx = Math.floor(pos * bins);
-          hist[idx] += o.v;
-          total += o.v;
-        }
-        if (total <= 0) continue;
-        const maxBin = Math.max(...hist);
-        const score = maxBin / total;
-        if (score > bestScore) {
-          bestScore = score;
-          best = c;
-        }
-      }
-      return best;
-    }
-
-    function hashString(input) {
-      let h = 2166136261 >>> 0;
-      for (let i = 0; i < input.length; i += 1) {
-        h ^= input.charCodeAt(i);
-        h = Math.imul(h, 16777619);
-      }
-      return h >>> 0;
-    }
-
-    function makeSeededRng(seed) {
-      let t = seed >>> 0;
-      return () => {
-        t += 0x6d2b79f5;
-        let x = t;
-        x = Math.imul(x ^ (x >>> 15), x | 1);
-        x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
-        return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
-      };
-    }
-
-    function evaluateChartQuality(notes, bpm) {
-      if (!notes || !notes.length) return -1e9;
-      const sorted = notes.slice().sort((a, b) => a.t - b.t);
-      const beat = 60 / Math.max(60, bpm || 120);
-      const holdCount = sorted.filter((n) => n.type === "hold").length;
-      const holdRatio = holdCount / Math.max(1, sorted.length);
-      const targetHoldRatio = 0.15;
-      const maxNpsByDifficulty = { easy: 3.2, normal: 5.0, hard: 7.0, expert: 8.8 };
-      const targetMaxNps = maxNpsByDifficulty[difficulty] || 5.0;
-      let score = 1000;
-
-      // Keep hold usage near target ratio.
-      score -= Math.abs(holdRatio - targetHoldRatio) * 420;
-
-      // Penalize impossible hold overlaps and over-complex hold internals.
-      const holds = sorted.filter((n) => n.type === "hold");
-      for (let i = 0; i < holds.length; i += 1) {
-        const a = holds[i];
-        const aEnd = a.end || (a.t + beat * 0.8);
-        for (let j = i + 1; j < holds.length; j += 1) {
-          const b = holds[j];
-          const bEnd = b.end || (b.t + beat * 0.8);
-          const syncStart = Math.abs(a.t - b.t) <= beat * 0.08;
-          const syncEnd = Math.abs(aEnd - bEnd) <= beat * 0.16;
-          const overlap = !(aEnd <= b.t + 0.03 || a.t >= bEnd - 0.03);
-          if (overlap && !(syncStart && syncEnd)) score -= 38;
-        }
-      }
-      for (const h of holds) {
-        const hEnd = h.end || (h.t + beat * 0.8);
-        let tapInside = 0;
-        for (const n of sorted) {
-          if (n.type === "hold") continue;
-          if (n.t > h.t + 0.03 && n.t < hEnd - 0.03) tapInside += 1;
-        }
-        if (tapInside > 2) score -= (tapInside - 2) * 9;
-      }
-
-      // Lane balance.
-      const laneCounts = new Array(laneCount).fill(0);
-      for (const n of sorted) laneCounts[n.lane] += 1;
-      const avgLane = sorted.length / laneCount;
-      let laneVar = 0;
-      for (const c of laneCounts) {
-        const d = c - avgLane;
-        laneVar += d * d;
-      }
-      laneVar /= Math.max(1, laneCount);
-      score -= Math.sqrt(laneVar) * 0.65;
-
-      // Local NPS strain.
-      let maxLoad = 0;
-      let j = 0;
-      let load = 0;
-      for (let i = 0; i < sorted.length; i += 1) {
-        const ni = sorted[i];
-        load += ni.type === "hold" ? 1.25 : 1;
-        while (ni.t - sorted[j].t > 1.0) {
-          load -= sorted[j].type === "hold" ? 1.25 : 1;
-          j += 1;
-        }
-        if (load > maxLoad) maxLoad = load;
-      }
-      if (maxLoad > targetMaxNps) {
-        const exceed = maxLoad - targetMaxNps;
-        score -= exceed * exceed * 24;
-      }
-
-      // Too many dead zones.
-      for (let i = 1; i < sorted.length; i += 1) {
-        const gap = sorted[i].t - sorted[i - 1].t;
-        if (gap > 2.2) score -= (gap - 2.2) * 10;
-      }
-
-      // Reward rhythmic consistency at bar-level.
-      const barSec = beat * barBeats;
-      if (barSec > 0.01) {
-        const barMap = new Map();
-        for (const n of sorted) {
-          const bar = Math.floor(n.t / barSec);
-          const pos = (n.t - bar * barSec) / barSec;
-          const bin = Math.max(0, Math.min(15, Math.round(pos * 15)));
-          if (!barMap.has(bar)) barMap.set(bar, new Set());
-          barMap.get(bar).add(bin);
-        }
-        const bars = Array.from(barMap.values());
-        for (let i = 1; i < bars.length; i += 1) {
-          const a = bars[i - 1];
-          const b = bars[i];
-          let overlap = 0;
-          for (const k of a) if (b.has(k)) overlap += 1;
-          score += overlap * 0.8;
-        }
-      }
-      return score;
-    }
-
-    function generateBestChart(buildOne, opts = {}) {
-      const attempts = Math.max(2, opts.attempts || 8);
-      const baseSeed = opts.baseSeed >>> 0;
-      const bpm = opts.bpm || 120;
-      const maxNotes = opts.maxNotes || 800;
-      let bestChart = [];
-      let bestScore = -1e9;
-      for (let i = 0; i < attempts; i += 1) {
-        const seed = (baseSeed + Math.imul(i + 1, 2654435761)) >>> 0;
-        const rng = makeSeededRng(seed);
-        let c = buildOne(rng) || [];
-        c = capNotes(c, maxNotes);
-        const s = evaluateChartQuality(c, bpm);
-        if (s > bestScore) {
-          bestScore = s;
-          bestChart = c;
-        }
-      }
-      return { chart: bestChart, score: bestScore };
-    }
-
-    function computeChartNoteLimit(durationSec) {
-      const baseByDifficulty = {
-        easy: 300,
-        normal: 500,
-        hard: 800,
-        expert: 1000
-      };
-      const base = baseByDifficulty[difficulty] || 500;
-      const safeDuration = Math.max(20, Number(durationSec) || 240);
-      const scaled = Math.round(base * (safeDuration / 240));
-      return Math.max(24, scaled);
-    }
-
-    function centerOutLanes(count) {
-      const seq = [];
-      let left = Math.floor((count - 1) / 2);
-      let right = left + 1;
-      while (seq.length < count) {
-        if (left >= 0) {
-          seq.push(left);
-          left -= 1;
-        }
-        if (seq.length >= count) break;
-        if (right < count) {
-          seq.push(right);
-          right += 1;
-        }
-      }
-      return seq;
-    }
-
-    function dedupeAndSortNotes(notes) {
-      const sorted = notes.slice().sort((a, b) => a.t - b.t);
-      const out = [];
-      for (const n of sorted) {
-        const last = out[out.length - 1];
-        if (last && last.lane === n.lane && Math.abs(last.t - n.t) <= 0.012) {
-          if (n.type === "hold" && last.type !== "hold") out[out.length - 1] = n;
-          continue;
-        }
-        out.push(n);
-      }
-      return out;
-    }
-
-    function applyFxQuality(q) {
-      fxQuality = q;
-      if (q === "off") {
-        MAX_PARTICLES = 24;
-        HEAVY_PARTICLE_THRESHOLD = 10;
-        FX_GLOW = 0.35;
-        FX_PARTICLE_GLOW = 0.4;
-        FLASH_DURATION = 0.1;
-      } else if (q === "medium") {
-        MAX_PARTICLES = 120;
-        HEAVY_PARTICLE_THRESHOLD = 70;
-        FX_GLOW = 0.7;
-        FX_PARTICLE_GLOW = 0.7;
-        FLASH_DURATION = 0.16;
-      } else {
-        MAX_PARTICLES = 220;
-        HEAVY_PARTICLE_THRESHOLD = 120;
-        FX_GLOW = 1;
-        FX_PARTICLE_GLOW = 1;
-        FLASH_DURATION = 0.2;
-      }
-    }
-
-    const themePresets = {
-      gold: {
-        label: "theme_gold",
-        vars: {
-          "--bg": "#0b0b0a",
-          "--panel": "#15130f",
-          "--line": "rgba(240, 220, 170, 0.12)",
-          "--line-soft": "rgba(240, 220, 170, 0.06)",
-          "--accent": "#d0b47a",
-          "--accent-2": "#f1d59a",
-          "--text": "#f4f0e8",
-          "--muted": "#b7aa93",
-          "--bg-grad-1": "rgba(214, 174, 90, 0.08)",
-          "--bg-grad-2": "rgba(96, 76, 36, 0.1)",
-          "--bg-overlay-1": "rgba(255, 235, 190, 0.06)",
-          "--bg-overlay-2": "rgba(210, 170, 90, 0.05)",
-          "--panel-grad-1": "rgba(22, 18, 12, 0.92)",
-          "--panel-grad-2": "rgba(16, 14, 10, 0.9)",
-          "--canvas-grad-1": "rgba(34, 28, 18, 0.5)",
-          "--canvas-grad-2": "rgba(18, 14, 10, 0.46)",
-          "--key-grad-1": "rgba(255, 244, 216, 0.1)",
-          "--key-grad-2": "rgba(255, 244, 216, 0.02)"
-        },
-        palette: [
-          { hue: 38, sat: 24, light: 76 },
-          { hue: 34, sat: 22, light: 70 },
-          { hue: 30, sat: 20, light: 64 },
-          { hue: 45, sat: 18, light: 58 },
-          { hue: 28, sat: 16, light: 72 }
-        ]
-      },
-      silver: {
-        label: "theme_silver",
-        vars: {
-          "--bg": "#090b0f",
-          "--panel": "#11141a",
-          "--line": "rgba(226, 236, 248, 0.13)",
-          "--line-soft": "rgba(226, 236, 248, 0.07)",
-          "--accent": "#b7c4d3",
-          "--accent-2": "#f2d9a2",
-          "--text": "#eef3f9",
-          "--muted": "#9ea9b6",
-          "--bg-grad-1": "rgba(246, 234, 200, 0.07)",
-          "--bg-grad-2": "rgba(164, 184, 210, 0.08)",
-          "--bg-overlay-1": "rgba(255, 255, 255, 0.05)",
-          "--bg-overlay-2": "rgba(248, 229, 188, 0.04)",
-          "--panel-grad-1": "rgba(18, 22, 30, 0.82)",
-          "--panel-grad-2": "rgba(12, 15, 21, 0.8)",
-          "--canvas-grad-1": "rgba(26, 33, 43, 0.43)",
-          "--canvas-grad-2": "rgba(14, 18, 25, 0.4)",
-          "--key-grad-1": "rgba(248, 252, 255, 0.08)",
-          "--key-grad-2": "rgba(248, 252, 255, 0.02)"
-        },
-        palette: [
-          { hue: 195, sat: 18, light: 76 },
-          { hue: 205, sat: 22, light: 70 },
-          { hue: 215, sat: 26, light: 64 },
-          { hue: 228, sat: 18, light: 58 },
-          { hue: 238, sat: 14, light: 74 }
-        ]
-      },
-      haze: {
-        label: "theme_haze",
-        vars: {
-          "--bg": "#18222e",
-          "--panel": "#1d2a3a",
-          "--line": "rgba(214, 230, 248, 0.18)",
-          "--line-soft": "rgba(214, 230, 248, 0.1)",
-          "--accent": "#cdd9e8",
-          "--accent-2": "#e0e9f5",
-          "--text": "#f6f9fd",
-          "--muted": "#c1cede",
-          "--bg-grad-1": "rgba(220, 238, 252, 0.24)",
-          "--bg-grad-2": "rgba(148, 186, 224, 0.22)",
-          "--bg-overlay-1": "rgba(232, 242, 255, 0.12)",
-          "--bg-overlay-2": "rgba(194, 216, 238, 0.12)",
-          "--panel-grad-1": "rgba(26, 36, 48, 0.92)",
-          "--panel-grad-2": "rgba(22, 30, 42, 0.9)",
-          "--canvas-grad-1": "rgba(46, 62, 84, 0.62)",
-          "--canvas-grad-2": "rgba(30, 44, 62, 0.56)",
-          "--key-grad-1": "rgba(244, 250, 255, 0.18)",
-          "--key-grad-2": "rgba(244, 250, 255, 0.06)"
-        },
-        palette: [
-          { hue: 202, sat: 18, light: 88 },
-          { hue: 208, sat: 20, light: 82 },
-          { hue: 214, sat: 22, light: 76 },
-          { hue: 222, sat: 16, light: 70 },
-          { hue: 198, sat: 14, light: 86 }
-        ]
-      },
-      snow: {
-        label: "theme_snow",
-        vars: {
-          "--bg": "#f7fafc",
-          "--panel": "#f4f7fb",
-          "--line": "rgba(120, 140, 168, 0.18)",
-          "--line-soft": "rgba(120, 140, 168, 0.1)",
-          "--accent": "#3f5b7a",
-          "--accent-2": "#7a9abc",
-          "--text": "#0e1a28",
-          "--muted": "#5b6a7a",
-          "--bg-grad-1": "rgba(255, 255, 255, 0.9)",
-          "--bg-grad-2": "rgba(220, 234, 248, 0.6)",
-          "--bg-overlay-1": "rgba(170, 190, 210, 0.12)",
-          "--bg-overlay-2": "rgba(200, 220, 240, 0.18)",
-          "--panel-grad-1": "rgba(255, 255, 255, 0.9)",
-          "--panel-grad-2": "rgba(242, 246, 252, 0.95)",
-          "--canvas-grad-1": "rgba(230, 238, 248, 0.9)",
-          "--canvas-grad-2": "rgba(214, 226, 240, 0.86)",
-          "--key-grad-1": "rgba(255, 255, 255, 0.92)",
-          "--key-grad-2": "rgba(240, 246, 252, 0.9)",
-          "--logo-filter": "invert(1) brightness(0.25) contrast(1.2) drop-shadow(0 0 24px rgba(0,0,0,0.35)) drop-shadow(0 0 60px rgba(0,0,0,0.18))",
-          "--logo-opacity": 0.88
-        },
-        palette: [
-          { hue: 205, sat: 22, light: 38 },
-          { hue: 210, sat: 24, light: 32 },
-          { hue: 215, sat: 26, light: 28 },
-          { hue: 195, sat: 18, light: 40 },
-          { hue: 220, sat: 16, light: 36 }
-        ]
-      },
-      obsidian: {
-        label: "theme_obsidian",
-        vars: {
-          "--bg": "#080b10",
-          "--panel": "#0f141b",
-          "--line": "rgba(170, 190, 220, 0.12)",
-          "--line-soft": "rgba(170, 190, 220, 0.06)",
-          "--accent": "#a7b4c6",
-          "--accent-2": "#d8e0ee",
-          "--text": "#e7eef8",
-          "--muted": "#8f9baa",
-          "--bg-grad-1": "rgba(90, 120, 160, 0.08)",
-          "--bg-grad-2": "rgba(30, 40, 60, 0.12)",
-          "--bg-overlay-1": "rgba(120, 140, 170, 0.05)",
-          "--bg-overlay-2": "rgba(60, 70, 90, 0.05)",
-          "--panel-grad-1": "rgba(12, 18, 26, 0.9)",
-          "--panel-grad-2": "rgba(10, 14, 20, 0.88)",
-          "--canvas-grad-1": "rgba(18, 24, 34, 0.5)",
-          "--canvas-grad-2": "rgba(10, 14, 20, 0.46)",
-          "--key-grad-1": "rgba(220, 230, 245, 0.08)",
-          "--key-grad-2": "rgba(220, 230, 245, 0.02)"
-        },
-        palette: [
-          { hue: 208, sat: 20, light: 74 },
-          { hue: 214, sat: 22, light: 68 },
-          { hue: 220, sat: 24, light: 62 },
-          { hue: 230, sat: 18, light: 58 },
-          { hue: 200, sat: 16, light: 72 }
-        ]
-      }
-    };
-
-    function applyTheme(name, persist = true) {
-      const preset = themePresets[name] || themePresets.silver;
-      theme = name in themePresets ? name : "silver";
-      // Default logo glow is white; only Snow overrides to black glow.
-      document.documentElement.style.setProperty("--logo-filter", "drop-shadow(0 0 32px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 72px rgba(255, 255, 255, 0.14))");
-      document.documentElement.style.setProperty("--logo-opacity", "1");
-      for (const [key, value] of Object.entries(preset.vars)) {
-        document.documentElement.style.setProperty(key, value);
-      }
-      tonePalette = preset.palette.slice();
-      if (ui.themeSelect) ui.themeSelect.value = theme;
-      if (ui.themeText) ui.themeText.textContent = t(preset.label);
-      if (persist) localStorage.setItem("theme", theme);
-    }
-
-    function defaultKeyBindings(count) {
-      return (keySets[count] || keySets[4]).slice();
-    }
-
-    function loadKeyBindings(count) {
-      const raw = localStorage.getItem(`keybinds_${count}`);
-      if (!raw) return defaultKeyBindings(count);
-      try {
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed) || parsed.length !== count) return defaultKeyBindings(count);
-        const lowered = parsed.map((k) => String(k || "").toLowerCase());
-        const unique = new Set(lowered);
-        if (unique.size !== count || lowered.some((k) => !k)) return defaultKeyBindings(count);
-        return lowered;
-      } catch {
-        return defaultKeyBindings(count);
-      }
-    }
-
-    function saveKeyBindings(count, keys) {
-      localStorage.setItem(`keybinds_${count}`, JSON.stringify(keys));
-    }
-
-    function renderKeybinds() {
-      if (!ui.keybinds) return;
-      ui.keybinds.style.gridTemplateColumns = `repeat(${laneCount}, minmax(0, 1fr))`;
-      ui.keybinds.innerHTML = "";
-      for (let i = 0; i < laneCount; i += 1) {
-        const btn = document.createElement("button");
-        btn.className = "keybind-btn";
-        if (bindingLane === i) btn.classList.add("listening");
-        btn.textContent = (keyBindings[i] || "?").toUpperCase();
-        btn.type = "button";
-        btn.addEventListener("click", () => {
-          bindingLane = i;
-          renderKeybinds();
-        });
-        ui.keybinds.appendChild(btn);
-      }
-    }
-
-    function resolveHoldTapConflicts(notes, bpm) {
-      if (!notes.length) return notes;
-      const beat = 60 / Math.max(70, bpm || 120);
-      const eps = Math.min(0.03, beat * 0.14);
-      const minHoldDur = Math.max(0.12, beat * 0.3);
-      const maxHoldDur = Math.max(minHoldDur + 0.04, beat * 3.5);
-      const sorted = dedupeAndSortNotes(notes).map((n) => ({ ...n }));
-      const holds = [];
-      for (const n of sorted) {
-        if (n.type !== "hold") continue;
-        const rawEnd = Number.isFinite(n.end) ? n.end : n.t + minHoldDur;
-        n.end = Math.min(n.t + maxHoldDur, Math.max(n.t + minHoldDur, rawEnd));
-        holds.push(n);
-      }
-      if (!holds.length) return sorted;
-      holds.sort((a, b) => a.t - b.t);
-      const cleaned = [];
-      for (const n of sorted) {
-        if (n.type === "hold") {
-          cleaned.push(n);
-          continue;
-        }
-        let insideHold = false;
-        for (let i = 0; i < holds.length; i += 1) {
-          const h = holds[i];
-          if (h.t > n.t - eps) break;
-          if (n.t > h.t + eps && n.t < h.end - eps) {
-            insideHold = true;
-            break;
-          }
-        }
-        if (!insideHold) cleaned.push(n);
-      }
-      return dedupeAndSortNotes(cleaned);
-    }
-
-    function deriveDrumGuitarAnchors(drumOnsets, guitarOnsets, bpm) {
-      if (!drumOnsets || !guitarOnsets || !drumOnsets.length || !guitarOnsets.length) return [];
-      const beat = 60 / Math.max(70, bpm || 120);
-      const window = Math.min(0.055, beat * 0.22);
-      const drums = drumOnsets.slice().sort((a, b) => a.t - b.t);
-      const guitars = guitarOnsets.slice().sort((a, b) => a.t - b.t);
-      const anchors = [];
-      let gi = 0;
-      let lastT = -999;
-      for (const d of drums) {
-        while (gi < guitars.length && guitars[gi].t < d.t - window) gi += 1;
-        let best = null;
-        for (let k = gi; k < Math.min(guitars.length, gi + 4); k += 1) {
-          const gOn = guitars[k];
-          if (gOn.t > d.t + window) break;
-          const dist = Math.abs(gOn.t - d.t);
-          if (!best || dist < best.dist) best = { gOn, dist };
-        }
-        if (!best) continue;
-        const t = d.t * 0.55 + best.gOn.t * 0.45;
-        if (t - lastT < Math.max(0.08, beat * 0.22)) continue;
-        anchors.push({
-          t,
-          v: (d.v || 0.5) + (best.gOn.v || 0.5),
-          importance: 2
-        });
-        lastT = t;
-      }
-      return anchors;
-    }
-
-    function classifySectionGrammar(sections, modes, barSec) {
-      if (!sections || !sections.length) return [];
-      const mix = modes.mix || [];
-      const drum = modes.drum || [];
-      const guitar = modes.guitar || [];
-      const calcRate = (list, start, end) => {
-        const span = Math.max(0.1, end - start);
-        let c = 0;
-        let e = 0;
-        for (const o of list) {
-          if (o.t >= start && o.t < end) {
-            c += 1;
-            e += o.v || 0.5;
-          }
-        }
-        return { countPerSec: c / span, energyPerSec: e / span };
-      };
-      const meta = sections.map((s, i) => {
-        const start = s.startBar * barSec;
-        const end = s.endBar * barSec;
-        const mixStat = calcRate(mix, start, end);
-        const drumStat = calcRate(drum, start, end);
-        const guitarStat = calcRate(guitar, start, end);
-        return {
-          index: i,
-          startBar: s.startBar,
-          endBar: s.endBar,
-          start,
-          end,
-          bars: Math.max(1, s.endBar - s.startBar),
-          mixRate: mixStat.countPerSec,
-          mixEnergy: mixStat.energyPerSec,
-          drumRate: drumStat.countPerSec,
-          guitarRate: guitarStat.countPerSec
-        };
-      });
-      const energies = meta.map((m) => m.mixEnergy).sort((a, b) => a - b);
-      const median = energies[Math.floor(energies.length * 0.5)] || 1;
-      return meta.map((m) => {
-        let type = "verse";
-        if (m.index === 0 && meta.length > 1) type = "intro";
-        else if (m.index === meta.length - 1 && m.mixEnergy < median * 0.9) type = "outro";
-        else if (m.mixEnergy > median * 1.3 && m.drumRate > m.guitarRate * 0.65) type = "breakdown";
-        else if (m.mixEnergy > median * 1.1) type = "chorus";
-        else if (m.mixEnergy < median * 0.78) type = "bridge";
-        return { ...m, type };
-      });
-    }
-
-    function buildRiffTemplateMap(onsets, barSec, bins = 16) {
-      if (!onsets || !onsets.length || barSec <= 0) return new Map();
-      const barBits = new Map();
-      for (const o of onsets) {
-        const bar = Math.floor(o.t / barSec);
-        const pos = (o.t - bar * barSec) / barSec;
-        const bin = Math.max(0, Math.min(bins - 1, Math.round(pos * (bins - 1))));
-        if (!barBits.has(bar)) barBits.set(bar, new Set());
-        barBits.get(bar).add(bin);
-      }
-      const sigToBars = new Map();
-      for (const [bar, set] of barBits.entries()) {
-        if (set.size < 3) continue;
-        const sig = Array.from(set.values()).sort((a, b) => a - b).join(",");
-        if (!sigToBars.has(sig)) sigToBars.set(sig, []);
-        sigToBars.get(sig).push(bar);
-      }
-      const templateMap = new Map();
-      for (const bars of sigToBars.values()) {
-        if (bars.length < 2) continue;
-        const leader = bars[0];
-        for (let i = 1; i < bars.length; i += 1) templateMap.set(bars[i], leader);
-      }
-      return templateMap;
-    }
-
-    function applyRiffReuse(notes, templateMap, barSec) {
-      if (!templateMap || !templateMap.size || !notes.length) return notes;
-      const byBar = new Map();
-      for (const n of notes) {
-        const bar = Math.floor(n.t / barSec);
-        if (!byBar.has(bar)) byBar.set(bar, []);
-        byBar.get(bar).push(n);
-      }
-      for (const [bar, lead] of templateMap.entries()) {
-        const src = (byBar.get(lead) || []).slice().sort((a, b) => a.t - b.t);
-        const dst = (byBar.get(bar) || []).slice().sort((a, b) => a.t - b.t);
-        if (src.length < 2 || dst.length < 2) continue;
-        const srcLanes = src.map((n) => n.lane);
-        for (let i = 0; i < dst.length; i += 1) {
-          dst[i].lane = srcLanes[i % srcLanes.length];
-        }
-      }
-      return notes;
-    }
-
-    function applyAnchorAlignment(notes, anchors, bpm, rng = Math.random) {
-      if (!anchors || !anchors.length || !notes.length) return notes;
-      const beat = 60 / Math.max(70, bpm || 120);
-      const window = Math.min(0.055, beat * 0.2);
-      const laneSeq = centerOutLanes(laneCount);
-      for (let i = 0; i < anchors.length; i += 1) {
-        const a = anchors[i];
-        let best = null;
-        for (let j = 0; j < notes.length; j += 1) {
-          const n = notes[j];
-          const d = Math.abs(n.t - a.t);
-          if (d > window) continue;
-          if (!best || d < best.d) best = { idx: j, d };
-        }
-        if (best) {
-          const n = notes[best.idx];
-          n.t = a.t;
-          n.lane = laneSeq[i % laneSeq.length];
-          n.importance = Math.max(n.importance || 1, 1.8);
-        }
-      }
-      return dedupeAndSortNotes(notes);
-    }
-
-    function snapNotesToGrid(notes, bpm, phaseOffset = 0) {
-      if (!notes.length) return notes;
-      const beat = 60 / Math.max(70, bpm || 120);
-      const grid = beat / 4;
-      const window = grid * 0.18;
-      for (const n of notes) {
-        const q = Math.round((n.t - phaseOffset) / grid) * grid + phaseOffset;
-        if (Math.abs(n.t - q) <= window) n.t = q;
-      }
-      return dedupeAndSortNotes(notes);
-    }
-
-    function injectMetalcorePatterns(notes, sections, anchors, bpm, barSec, rng = Math.random, sourceOnsets = null) {
-      if (!sections || !sections.length) return notes;
-      const difficultyGain = { easy: 0.45, normal: 0.72, hard: 0.96, expert: 1.15 }[difficulty] || 0.72;
-      const patterns = {
-        intro: [[0, 0.5]],
-        verse: [[0, 0.375, 0.5, 0.875]],
-        chorus: [[0, 0.25, 0.5, 0.75], [0, 0.375, 0.5, 0.75, 0.875]],
-        breakdown: [[0, 0.25, 0.375, 0.5, 0.75, 0.875], [0, 0.125, 0.25, 0.5, 0.625, 0.75]],
-        bridge: [[0, 0.5, 0.75]],
-        outro: [[0, 0.5]]
-      };
-      const hasNearby = (t, lane = null) => notes.some((n) =>
-        Math.abs(n.t - t) <= 0.042 && (lane === null || n.lane === lane)
-      );
-      let onsetTimes = null;
-      if (sourceOnsets && sourceOnsets.length) {
-        onsetTimes = sourceOnsets.slice().sort((a, b) => a.t - b.t).map((o) => o.t);
-      }
-      const hasOnsetNear = (t) => {
-        if (!onsetTimes) return true;
-        let lo = 0;
-        let hi = onsetTimes.length - 1;
-        while (lo <= hi) {
-          const mid = (lo + hi) >> 1;
-          const v = onsetTimes[mid];
-          if (v < t) lo = mid + 1;
-          else hi = mid - 1;
-        }
-        const idx = Math.max(0, Math.min(onsetTimes.length - 1, lo));
-        const a = onsetTimes[idx];
-        const b = onsetTimes[Math.max(0, idx - 1)];
-        const dist = Math.min(Math.abs(a - t), Math.abs(b - t));
-        return dist <= Math.min(0.06, (60 / bpm) * 0.2);
-      };
-      const laneSeq = centerOutLanes(laneCount);
-      const barAnchors = new Map();
-      for (const a of anchors || []) {
-        const bar = Math.floor(a.t / barSec);
-        barAnchors.set(bar, (barAnchors.get(bar) || 0) + 1);
-      }
-      for (const sec of sections) {
-        const bank = patterns[sec.type] || patterns.verse;
-        const barStart = sec.startBar;
-        const barEnd = sec.endBar;
-        for (let bar = barStart; bar < barEnd; bar += 1) {
-          const anchorWeight = Math.min(1.2, 0.4 + (barAnchors.get(bar) || 0) * 0.25);
-          if (rng() > 0.6 * difficultyGain * anchorWeight) continue;
-          const pat = bank[bar % bank.length];
-          const base = bar * barSec;
-          for (let pi = 0; pi < pat.length; pi += 1) {
-            let t = base + pat[pi] * barSec;
-            let nearest = null;
-            for (const a of anchors || []) {
-              const d = Math.abs(a.t - t);
-              if (d < Math.min(0.06, (60 / bpm) * 0.2) && (!nearest || d < nearest.d)) nearest = { a, d };
-            }
-            if (nearest) t = nearest.a.t;
-            const lane = laneSeq[(bar + pi) % laneSeq.length];
-            if (!hasOnsetNear(t)) continue;
-            if (hasNearby(t, lane)) continue;
-            notes.push({
-              t,
-              lane,
-              type: "tap",
-              color: toneColor(rng),
-              importance: sec.type === "breakdown" ? 1.8 : 1.35
-            });
-            if ((difficulty === "hard" || difficulty === "expert") && sec.type === "breakdown" && rng() < 0.14) {
-              const lane2 = (lane + 2) % laneCount;
-              if (!hasNearby(t, lane2)) {
-                notes.push({
-                  t,
-                  lane: lane2,
-                  type: "tap",
-                  color: toneColor(rng),
-                  importance: 1.55
-                });
+            if (streak >= 3) {
+              found = true;
+              for (let k = 0; k < streak; k++) {
+                matches[r][c - 1 - k] = true;
               }
             }
-          }
-        }
-      }
-      return dedupeAndSortNotes(notes);
-    }
-
-    function enforceDifficultyComplexity(notes, bpm, barSec, rng = Math.random) {
-      if (!notes.length) return notes;
-      const maxChordByDiff = { easy: 1, normal: 2, hard: 2, expert: 3 }[difficulty] || 2;
-      const targetNpsByDiff = { easy: 3.1, normal: 5.0, hard: 7.1, expert: 9.0 };
-      const targetNps = targetNpsByDiff[difficulty] || 5.0;
-      const sorted = dedupeAndSortNotes(notes);
-      const groups = new Map();
-      for (const n of sorted) {
-        const key = n.t.toFixed(3);
-        if (!groups.has(key)) groups.set(key, []);
-        groups.get(key).push(n);
-      }
-      for (const group of groups.values()) {
-        if (group.length <= maxChordByDiff) continue;
-        group.sort((a, b) => (b.importance || 1) - (a.importance || 1));
-        for (let i = maxChordByDiff; i < group.length; i += 1) {
-          group[i]._drop = true;
-        }
-      }
-      let compact = sorted.filter((n) => !n._drop);
-
-      // Local density trimming with note importance.
-      let guard = 0;
-      while (guard < 260) {
-        guard += 1;
-        let maxLoad = 0;
-        let left = 0;
-        let load = 0;
-        let bestWindow = null;
-        for (let i = 0; i < compact.length; i += 1) {
-          load += compact[i].type === "hold" ? 1.25 : 1;
-          while (compact[i].t - compact[left].t > 1.0) {
-            load -= compact[left].type === "hold" ? 1.25 : 1;
-            left += 1;
-          }
-          if (load > maxLoad) {
-            maxLoad = load;
-            bestWindow = { l: left, r: i };
-          }
-        }
-        if (!bestWindow || maxLoad <= targetNps) break;
-        let removeIdx = -1;
-        let bestCost = Infinity;
-        for (let i = bestWindow.l; i <= bestWindow.r; i += 1) {
-          const n = compact[i];
-          const imp = n.importance || 1;
-          const prev = compact[i - 1];
-          const next = compact[i + 1];
-          const localGap = (prev ? Math.abs(n.t - prev.t) : 0.2) + (next ? Math.abs(next.t - n.t) : 0.2);
-          const holdPenalty = n.type === "hold" ? 0.45 : 0;
-          const cost = imp * 2.1 + holdPenalty + localGap * 5 + rng() * 0.06;
-          if (cost < bestCost) {
-            bestCost = cost;
-            removeIdx = i;
-          }
-        }
-        if (removeIdx < 0) break;
-        compact.splice(removeIdx, 1);
-      }
-      const cleaned = dedupeAndSortNotes(compact).map((n) => {
-        delete n.importance;
-        return n;
-      });
-      return resolveHoldTapConflicts(cleaned, bpm);
-    }
-
-    function buildChartFromOnsets(onsets, bpm, density, phaseOffset = 0, lock = 0.65, rng = Math.random, postprocess = true) {
-      if (!onsets.length) return [];
-      const beat = 60 / bpm;
-      const grid = beat / 4;
-      const barSec = beat * barBeats;
-      const timeColor = new Map();
-      const colorForTime = (t) => {
-        const key = t.toFixed(3);
-        if (!timeColor.has(key)) timeColor.set(key, toneColor(rng));
-        return timeColor.get(key);
-      };
-
-      const quantMap = new Map();
-      for (const o of onsets) {
-        const idx = Math.round((o.t - phaseOffset) / grid);
-        const q = idx * grid + phaseOffset;
-        const entry = quantMap.get(idx) || { t: q, v: 0, c: 0 };
-        entry.v += o.v || 0.4;
-        entry.c += 1;
-        quantMap.set(idx, entry);
-      }
-      const quantized = Array.from(quantMap.values())
-        .map((q) => ({ t: q.t, v: q.v }))
-        .sort((a, b) => a.t - b.t);
-      if (!quantized.length) return [];
-
-      const byBar = new Map();
-      for (const q of quantized) {
-        const bar = Math.floor(q.t / barSec);
-        if (!byBar.has(bar)) byBar.set(bar, []);
-        byBar.get(bar).push(q);
-      }
-
-      const diffMult = { easy: 0.85, normal: 1, hard: 1.2, expert: 1.45 }[difficulty] || 1;
-      const targetBase = (3.6 + density * 4.2) * diffMult;
-      const minPerBar = Math.max(2, Math.round(2.6 * diffMult));
-      const maxPerBar = Math.round(10 * diffMult);
-      const minGap = grid * 0.75;
-      const laneSeq = centerOutLanes(laneCount);
-      let laneIdx = 0;
-      const notes = [];
-
-      const bars = Array.from(byBar.keys()).sort((a, b) => a - b);
-      for (const bar of bars) {
-        const list = byBar.get(bar).slice().sort((a, b) => b.v - a.v);
-        const maxV = list[0]?.v || 1;
-        let target = Math.round(targetBase);
-        target = Math.min(maxPerBar, Math.max(minPerBar, target));
-        const picked = [];
-        for (const q of list) {
-          if (picked.length >= target) break;
-          if (picked.some((p) => Math.abs(p.t - q.t) < minGap)) continue;
-          if (q.v < maxV * 0.18) continue;
-          picked.push(q);
-        }
-        if (picked.length < minPerBar) {
-          const fallback = list.slice().sort((a, b) => a.t - b.t);
-          for (const q of fallback) {
-            if (picked.length >= minPerBar) break;
-            if (picked.some((p) => Math.abs(p.t - q.t) < minGap)) continue;
-            picked.push(q);
-          }
-        }
-        picked.sort((a, b) => a.t - b.t);
-        for (const q of picked) {
-          const beatIndex = Math.round((q.t - phaseOffset) / grid);
-          const strong = q.v >= maxV * 0.72 && (beatIndex % 4 === 0);
-          const lane = laneSeq[laneIdx % laneSeq.length];
-          laneIdx += 1;
-          const c = colorForTime(q.t);
-          notes.push({ t: q.t, lane, type: "tap", color: c });
-          if (strong && laneCount >= 4) {
-            const other = (lane + Math.floor(laneCount / 2)) % laneCount;
-            notes.push({ t: q.t, lane: other, type: "tap", color: c });
+            streak = 1;
           }
         }
       }
 
-      const base = injectHolds(notes.sort((a, b) => a.t - b.t), bpm, rng);
-      if (!postprocess) return base;
-      const riffMap = buildRiffTemplateMap(onsets, barSec);
-      const snapped = snapNotesToGrid(applyRiffReuse(base, riffMap, barSec), bpm, phaseOffset);
-      return enforceDifficultyComplexity(snapped, bpm, barSec, rng);
-    }
-
-    function injectHolds(notes, bpm, rng = Math.random) {
-      if (!notes.length) return notes;
-      const beat = 60 / bpm;
-      const sorted = notes
-        .slice()
-        .sort((a, b) => a.t - b.t)
-        .map((n, i) => ({ ...n, _idx: i }));
-      const byLane = new Map();
-      for (const n of sorted) {
-        if (!byLane.has(n.lane)) byLane.set(n.lane, []);
-        byLane.get(n.lane).push(n._idx);
-      }
-
-      const candidates = [];
-      for (const [lane, idxList] of byLane.entries()) {
-        for (let i = 0; i < idxList.length - 1; i += 1) {
-          const startIdx = idxList[i];
-          const endIdx = idxList[i + 1];
-          const a = sorted[startIdx];
-          const b = sorted[endIdx];
-          const gap = b.t - a.t;
-          if (gap < beat * 0.72 || gap > beat * 3.2) continue;
-          const endT = Math.min(b.t - 0.045, a.t + beat * 2.6);
-          if (endT - a.t < beat * 0.45) continue;
-          candidates.push({
-            lane,
-            startIdx,
-            endIdx,
-            start: a.t,
-            end: endT,
-            dur: endT - a.t
-          });
-        }
-      }
-      if (!candidates.length) {
-        return sorted.map(({ _idx, ...n }) => n);
-      }
-
-      const minHoldCount = sorted.length >= 12 ? 1 : 0;
-      const targetHoldCount = Math.max(minHoldCount, Math.floor(sorted.length * 0.15));
-      const wantHoldCount = Math.min(candidates.length, targetHoldCount);
-      const selected = [];
-
-      const overlapsUnsynced = (a, b) => {
-        const syncStart = Math.abs(a.start - b.start) <= beat * 0.08;
-        const syncEnd = Math.abs(a.end - b.end) <= beat * 0.16;
-        if (syncStart && syncEnd) return false;
-        return !(a.end <= b.start + 0.03 || a.start >= b.end - 0.03);
-      };
-
-      const primaryOrder = candidates.slice().sort((a, b) => {
-        const sa = a.dur + rng() * beat * 0.35;
-        const sb = b.dur + rng() * beat * 0.35;
-        return sb - sa;
-      });
-
-      for (const c of primaryOrder) {
-        if (selected.length >= wantHoldCount) break;
-        if (selected.some((s) => overlapsUnsynced(c, s))) continue;
-        if (rng() < 0.78 || selected.length === 0) selected.push(c);
-      }
-      if (selected.length < wantHoldCount) {
-        for (const c of primaryOrder) {
-          if (selected.length >= wantHoldCount) break;
-          if (selected.includes(c)) continue;
-          if (selected.some((s) => overlapsUnsynced(c, s))) continue;
-          selected.push(c);
-        }
-      }
-      if (selected.length === 0 && minHoldCount > 0) {
-        selected.push(primaryOrder[0]);
-      }
-
-      const selectedStart = new Map();
-      const consumedTail = new Set();
-      for (const c of selected) {
-        if (!selectedStart.has(c.startIdx)) selectedStart.set(c.startIdx, c);
-        consumedTail.add(c.endIdx);
-      }
-
-      let result = [];
-      for (const n of sorted) {
-        const picked = selectedStart.get(n._idx);
-        if (picked) {
-          const { _idx, ...base } = n;
-          result.push({ ...base, type: "hold", end: picked.end });
-          continue;
-        }
-        if (consumedTail.has(n._idx)) continue;
-        const { _idx, ...base } = n;
-        result.push(base);
-      }
-      result.sort((a, b) => a.t - b.t);
-
-      // While a hold is active, thin out taps for better finger ergonomics.
-      const holds = result.filter((n) => n.type === "hold").sort((a, b) => a.t - b.t);
-      if (holds.length) {
-        const thinned = [];
-        let holdPtr = 0;
-        let lastTapInHold = -999;
-        const minTapGapInHold = Math.max(0.14, beat * 0.33);
-        for (const n of result) {
-          if (n.type === "hold") {
-            thinned.push(n);
-            continue;
-          }
-          while (holdPtr < holds.length && holds[holdPtr].end <= n.t + 0.03) holdPtr += 1;
-          const ah = holds[holdPtr];
-          const insideHold = !!(ah && n.t > ah.t + 0.03 && n.t < ah.end - 0.03);
-          if (!insideHold) {
-            thinned.push(n);
-            continue;
-          }
-          if (n.lane === ah.lane) continue;
-          if (n.t - lastTapInHold < minTapGapInHold) continue;
-          const half = laneCount / 2;
-          const sameSide = (n.lane < half) === (ah.lane < half);
-          if (sameSide && n.t - ah.t < beat * 0.36) continue;
-          thinned.push(n);
-          lastTapInHold = n.t;
-        }
-        result = thinned.sort((a, b) => a.t - b.t);
-      }
-
-      // Keep hold ratio around 15% after thinning/capping.
-      let holdCount = result.filter((n) => n.type === "hold").length;
-      const hardMaxHold = Math.max(minHoldCount, Math.floor(result.length * 0.15));
-      if (holdCount > hardMaxHold) {
-        const holdIdx = [];
-        for (let i = 0; i < result.length; i += 1) {
-          const n = result[i];
-          if (n.type === "hold") holdIdx.push({ i, dur: Math.max(0.01, (n.end || n.t) - n.t) });
-        }
-        holdIdx.sort((a, b) => b.dur - a.dur);
-        const keep = new Set(holdIdx.slice(0, hardMaxHold).map((x) => x.i));
-        for (const h of holdIdx) {
-          if (keep.has(h.i)) continue;
-          const n = result[h.i];
-          n.type = "tap";
-          delete n.end;
-        }
-      }
-      return resolveHoldTapConflicts(result.sort((a, b) => a.t - b.t), bpm);
-    }
-
-    function chooseSegments(modes, barSec) {
-      const barScores = [];
-      let maxT = 0;
-      for (const [mode, onsets] of Object.entries(modes)) {
-        for (const o of onsets) {
-          const idx = Math.floor(o.t / barSec);
-          if (!barScores[idx]) barScores[idx] = {};
-          barScores[idx][mode] = (barScores[idx][mode] || 0) + o.v;
-          if (o.t > maxT) maxT = o.t;
-        }
-      }
-
-      const bars = Math.max(1, Math.ceil(maxT / barSec));
-      const barModes = [];
-      for (let i = 0; i < bars; i += 1) {
-        const bucket = barScores[i] || {};
-        let bestMode = Object.keys(modes)[0] || "drum";
-        let bestScore = -1;
-        for (const mode of Object.keys(modes)) {
-          const value = bucket[mode] || 0;
-          if (value > bestScore) {
-            bestScore = value;
-            bestMode = mode;
-          }
-        }
-        barModes[i] = bestMode;
-      }
-
-      const smoothed = barModes.map((mode, i) => {
-        const window = [barModes[i - 1], barModes[i], barModes[i + 1]].filter(Boolean);
-        const counts = {};
-        for (const m of window) counts[m] = (counts[m] || 0) + 1;
-        let best = mode;
-        let bestCount = -1;
-        for (const m of Object.keys(counts)) {
-          if (counts[m] > bestCount) {
-            bestCount = counts[m];
-            best = m;
-          }
-        }
-        return best;
-      });
-
-      const segments = [];
-      let startBar = 0;
-      for (let i = 1; i <= smoothed.length; i += 1) {
-        if (i === smoothed.length || smoothed[i] !== smoothed[i - 1]) {
-          segments.push({
-            mode: smoothed[i - 1],
-            start: startBar * barSec,
-            end: i * barSec,
-            bars: i - startBar
-          });
-          startBar = i;
-        }
-      }
-
-      // Merge too-short segments into neighbors to avoid jitter.
-      const merged = [];
-      for (const seg of segments) {
-        if (merged.length === 0) {
-          merged.push(seg);
-          continue;
-        }
-        if (seg.bars < 2) {
-          merged[merged.length - 1].end = seg.end;
-          merged[merged.length - 1].bars += seg.bars;
-        } else {
-          merged.push(seg);
-        }
-      }
-      return merged;
-    }
-
-    function detectSections(onsets, barSec) {
-      const bars = Math.max(1, Math.ceil(onsets[onsets.length - 1]?.t / barSec || 1));
-      const energy = new Array(bars).fill(0);
-      for (const o of onsets) {
-        const idx = Math.floor(o.t / barSec);
-        if (idx >= 0 && idx < bars) energy[idx] += o.v;
-      }
-      const smooth = energy.map((_, i) => {
-        const a = energy[i - 1] || 0;
-        const b = energy[i] || 0;
-        const c = energy[i + 1] || 0;
-        return (a + b * 2 + c) / 4;
-      });
-      const sections = [];
-      let start = 0;
-      for (let i = 1; i < bars; i += 1) {
-        const prev = smooth[i - 1] || 1e-6;
-        const curr = smooth[i] || 1e-6;
-        const ratio = curr / prev;
-        const longEnough = i - start >= 3;
-        if (longEnough && (ratio > 1.6 || ratio < 0.6)) {
-          sections.push({ startBar: start, endBar: i });
-          start = i;
-        }
-      }
-      sections.push({ startBar: start, endBar: bars });
-      return sections;
-    }
-
-    function buildChartAuto(modes, bpm, density, phaseOffset, lock, barSec, rng = Math.random) {
-      const segments = chooseSegments(modes, barSec);
-      const sectionEnergy = detectSections(modes.mix || [], barSec);
-      const sectionGrammar = classifySectionGrammar(sectionEnergy, modes, barSec);
-      const anchors = deriveDrumGuitarAnchors(modes.drum || [], modes.guitar || [], bpm);
-      const overallEnergy = (modes.mix || []).reduce((s, o) => s + o.v, 0) / Math.max(1, sectionEnergy.length);
-      const barBins = 16;
-      const buildTemplate = (onsets) => {
-        if (!onsets.length) return [];
-        const counts = new Map();
-        for (const o of onsets) {
-          const pos = (o.t % barSec) / barSec;
-          const bin = Math.round(pos * barBins);
-          const key = Math.max(0, Math.min(barBins, bin));
-          counts.set(key, (counts.get(key) || 0) + 1);
-        }
-        const max = Math.max(...counts.values());
-        const template = [];
-        for (const [k, v] of counts.entries()) {
-          if (v >= max * 0.65) template.push(k / barBins);
-        }
-        return template.sort((a, b) => a - b);
-      };
-
-      const templates = sectionEnergy.map((sec) => {
-        const onsets = (modes.mix || []).filter((o) => {
-          const bar = Math.floor(o.t / barSec);
-          return bar >= sec.startBar && bar < sec.endBar;
-        });
-        return buildTemplate(onsets);
-      });
-
-      const sectionIndexForBar = (bar) => {
-        for (let i = 0; i < sectionEnergy.length; i += 1) {
-          const sec = sectionEnergy[i];
-          if (bar >= sec.startBar && bar < sec.endBar) return i;
-        }
-        return 0;
-      };
-
-      const merged = [];
-      for (const seg of segments) {
-        const segBarStart = Math.floor(seg.start / barSec);
-        const sec = sectionEnergy.find((s) => segBarStart >= s.startBar && segBarStart < s.endBar) || sectionEnergy[0];
-        const secOnsets = (modes.mix || []).filter((o) => {
-          const bar = Math.floor(o.t / barSec);
-          return bar >= sec.startBar && bar < sec.endBar;
-        });
-        const secEnergy = secOnsets.reduce((s, o) => s + o.v, 0) / Math.max(1, sec.endBar - sec.startBar);
-        const scale = overallEnergy > 0 ? Math.min(1.25, Math.max(0.8, secEnergy / overallEnergy)) : 1;
-        const segDensity = density * scale;
-        const onsets = (modes[seg.mode] || []).filter((o) => o.t >= seg.start && o.t < seg.end);
-        const chunk = buildChartFromOnsets(onsets, bpm, segDensity, phaseOffset, lock, rng, false);
-        // Align rhythm to section template when close.
-        for (const n of chunk) {
-          const bar = Math.floor(n.t / barSec);
-          const idx = sectionIndexForBar(bar);
-          const template = templates[idx] || [];
-          if (!template.length) continue;
-          const pos = (n.t % barSec) / barSec;
-          let best = pos;
-          let bestDist = 1;
-          for (const tPos of template) {
-            const d = Math.abs(pos - tPos);
-            if (d < bestDist) {
-              bestDist = d;
-              best = tPos;
-            }
-          }
-          if (bestDist <= 0.08) {
-            n.t = bar * barSec + best * barSec;
-          }
-        }
-        for (const n of chunk) merged.push(n);
-      }
-      let out = merged.sort((a, b) => a.t - b.t).map((n) => ({ ...n, importance: n.type === "hold" ? 1.25 : 1 }));
-      out = applyAnchorAlignment(out, anchors, bpm, rng);
-      out = injectMetalcorePatterns(out, sectionGrammar, anchors, bpm, barSec, rng, modes.mix || []);
-      const riffSource = (modes.guitar && modes.guitar.length) ? modes.guitar : (modes.mix || []);
-      const riffMap = buildRiffTemplateMap(riffSource, barSec);
-      out = snapNotesToGrid(applyRiffReuse(out, riffMap, barSec), bpm, phaseOffset);
-      out = enforceDifficultyComplexity(out, bpm, barSec, rng);
-      return out.sort((a, b) => a.t - b.t);
-    }
-
-    function roundRectPath(ctx2d, x, y, w, h, r) {
-      const rr = Math.max(0, Math.min(r, w * 0.5, h * 0.5));
-      ctx2d.beginPath();
-      ctx2d.moveTo(x + rr, y);
-      ctx2d.lineTo(x + w - rr, y);
-      ctx2d.quadraticCurveTo(x + w, y, x + w, y + rr);
-      ctx2d.lineTo(x + w, y + h - rr);
-      ctx2d.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
-      ctx2d.lineTo(x + rr, y + h);
-      ctx2d.quadraticCurveTo(x, y + h, x, y + h - rr);
-      ctx2d.lineTo(x, y + rr);
-      ctx2d.quadraticCurveTo(x, y, x + rr, y);
-      ctx2d.closePath();
-    }
-
-    function pushParticle(p) {
-      if (particles.length >= MAX_PARTICLES) return;
-      particles.push(p);
-    }
-
-    function drawLuxNote(x, y, w, h, color, glow = 1) {
-      g.save();
-      const grad = g.createLinearGradient(x, y, x, y + h);
-      grad.addColorStop(0, "rgba(255,255,255,0.24)");
-      grad.addColorStop(0.24, color);
-      grad.addColorStop(1, "rgba(170,188,206,0.9)");
-      g.shadowBlur = 6 * glow * FX_GLOW;
-      g.shadowColor = "rgba(236,244,255,0.42)";
-      roundRectPath(g, x, y, w, h, 7);
-      g.fillStyle = grad;
-      g.fill();
-      g.shadowBlur = 0;
-      g.strokeStyle = "rgba(250,252,255,0.26)";
-      g.lineWidth = 1;
-      roundRectPath(g, x + 0.5, y + 0.5, w - 1, h - 1, 6.5);
-      g.stroke();
-      g.restore();
-    }
-
-    function render(currentTime = 0, audioNow = null) {
-      const { width, height, judgeY } = gameState;
-      g.clearRect(0, 0, width, height);
-
-      const wallTime = audioNow ?? (ctx ? ctx.currentTime : currentTime + startTime);
-      const timeToStart = countdownActive ? countdownEnd - wallTime : -1;
-      const preStart = running && countdownActive && timeToStart > -0.05;
-
-      g.fillStyle = "rgba(11, 16, 24, 0.5)";
-      g.fillRect(0, 0, width, height);
-
-      const laneWidth = width / laneCount;
-      for (let lane = 0; lane < laneCount; lane += 1) {
-        g.fillStyle = lane % 2 === 0 ? "rgba(16, 24, 38, 0.44)" : "rgba(14, 22, 34, 0.4)";
-        g.fillRect(lane * laneWidth, 0, laneWidth, height);
-
-        g.strokeStyle = "rgba(37, 50, 68, 0.45)";
-        g.lineWidth = 1;
-        g.beginPath();
-        g.moveTo(lane * laneWidth, 0);
-        g.lineTo(lane * laneWidth, height);
-        g.stroke();
-
-        const flashAge = currentTime - laneFlash[lane];
-        if (flashAge >= 0 && flashAge < FLASH_DURATION) {
-          const alpha = 1 - flashAge / FLASH_DURATION;
-          const x0 = lane * laneWidth;
-          const laneGrad = g.createLinearGradient(0, 0, 0, height);
-          laneGrad.addColorStop(0, `rgba(0,0,0,0)`);
-          laneGrad.addColorStop(0.58, `rgba(206, 220, 236, ${0.06 * alpha})`);
-          laneGrad.addColorStop(0.88, `rgba(206, 220, 236, ${0.14 * alpha})`);
-          laneGrad.addColorStop(1, `rgba(0,0,0,0)`);
-          g.fillStyle = laneGrad;
-          g.fillRect(x0, 0, laneWidth, height);
-
-          const judgeGrad = g.createLinearGradient(0, judgeY - 34, 0, judgeY + 34);
-          judgeGrad.addColorStop(0, `rgba(0,0,0,0)`);
-          judgeGrad.addColorStop(0.32, `rgba(255, 242, 206, ${0.08 * alpha})`);
-          judgeGrad.addColorStop(0.5, `rgba(242, 248, 255, ${0.24 * alpha})`);
-          judgeGrad.addColorStop(0.68, `rgba(255, 242, 206, ${0.08 * alpha})`);
-          judgeGrad.addColorStop(1, `rgba(0,0,0,0)`);
-          g.fillStyle = judgeGrad;
-          g.fillRect(x0, judgeY - 34, laneWidth, 68);
-        }
-      }
-
-      g.strokeStyle = "rgba(37, 50, 68, 0.45)";
-      g.beginPath();
-      g.moveTo(width, 0);
-      g.lineTo(width, height);
-      g.stroke();
-
-      const breathe = 0.18 + 0.12 * Math.sin(wallTime * 2.6);
-      const judgeAlpha = Math.min(0.65, breathe + (preStart ? 0.24 : 0));
-      g.fillStyle = `rgba(144, 160, 176, ${judgeAlpha})`;
-      g.fillRect(0, judgeY - 2, width, 4);
-
-      if (currentTime < lastRenderTime) renderStartIndex = 0;
-      lastRenderTime = currentTime;
-
-      while (renderStartIndex < chart.length) {
-        const n = chart[renderStartIndex];
-        const nEnd = (n.type === "hold" ? n.end : n.t) + offsetSec;
-        if (nEnd < currentTime - 0.4) {
-          renderStartIndex += 1;
-        } else {
-          break;
-        }
-      }
-
-      for (let i = renderStartIndex; i < chart.length; i += 1) {
-        const note = chart[i];
-        if (note.hit) continue;
-        const dt = (note.t + offsetSec) - currentTime;
-        if (dt > scrollTime) break;
-        const x = note.lane * laneWidth + 12;
-        const w = laneWidth - 24;
-        const color = note.color || laneColor(note.lane);
-        if (note.type === "hold") {
-          const endDt = (note.end + offsetSec) - currentTime;
-          if (endDt < -hitWindow) continue;
-          const holdActive = !!(activeHolds[note.lane] && activeHolds[note.lane].note === note);
-          const yHead = holdActive ? judgeY : (judgeY - (dt / scrollTime) * (height - 40));
-          const yTail = judgeY - (endDt / scrollTime) * (height - 40);
-          const y0 = Math.min(yHead, yTail);
-          const y1 = Math.max(yHead, yTail);
-          const bodyH = Math.max(12, y1 - y0);
-          g.fillStyle = "rgba(196,216,236,0.16)";
-          g.fillRect(x + 4, y0, w - 8, bodyH);
-          if (!holdActive) {
-            drawLuxNote(x, yHead - 10, w, 18, color, 0.78);
-          }
-          // tail cap
-          g.fillStyle = "rgba(232,240,248,0.46)";
-          g.fillRect(x + 6, yTail - 5, w - 12, 7);
-        } else {
-          const y = judgeY - (dt / scrollTime) * (height - 40);
-          drawLuxNote(x, y - 9, w, 18, color, 1);
-        }
-      }
-
-      if (preStart) {
-        const remain = Math.max(0, timeToStart);
-        const count = Math.ceil(remain);
-        const progress = Math.min(1, Math.max(0, 1 - remain / 3));
-        g.save();
-        g.fillStyle = "rgba(10, 14, 22, 0.38)";
-        g.fillRect(0, 0, width, height);
-        g.fillStyle = "rgba(240,244,255,0.92)";
-        g.font = "bold 46px 'Helvetica Neue', 'Arial'";
-        g.textAlign = "center";
-        g.fillText(count, width / 2, judgeY - 80);
-        g.font = "18px 'Helvetica Neue', 'Arial'";
-        g.fillStyle = "rgba(210,222,240,0.9)";
-        g.fillText(t("countdown_hint") || "准备按判定线", width / 2, judgeY - 40);
-        const barW = Math.max(140, width * 0.36);
-        const barX = (width - barW) / 2;
-        const barY = judgeY - 22;
-        g.fillStyle = "rgba(120, 140, 168, 0.35)";
-        g.fillRect(barX, barY, barW, 6);
-        const grad = g.createLinearGradient(barX, barY, barX + barW, barY);
-        grad.addColorStop(0, "rgba(255, 238, 204, 0.9)");
-        grad.addColorStop(1, "rgba(196, 222, 250, 0.9)");
-        g.fillStyle = grad;
-        g.fillRect(barX, barY, barW * progress, 6);
-        g.restore();
-      }
-
-      // Particle sparkles.
-      g.save();
-      g.globalCompositeOperation = "lighter";
-      const lightweightParticles = particles.length > HEAVY_PARTICLE_THRESHOLD;
-      for (let i = particles.length - 1; i >= 0; i -= 1) {
-        const p = particles[i];
-        const age = currentTime - p.t;
-        if (age > p.life) {
-          particles.splice(i, 1);
-          continue;
-        }
-        const alpha = 1 - age / p.life;
-        const px = p.x + p.vx * age;
-        const py = p.y + p.vy * age + 80 * age * age;
-        if (p.kind === "ring") {
-          const rr = p.r + age * (p.expand || 100);
-          g.strokeStyle = p.tint === "gold"
-            ? `rgba(255, 228, 172, ${0.34 * alpha})`
-            : `rgba(240, 246, 255, ${0.34 * alpha})`;
-          g.lineWidth = 0.9 + alpha * 1.2;
-          g.beginPath();
-          g.arc(px, py, rr, 0, Math.PI * 2);
-          g.stroke();
-        } else {
-          const gold = p.tint === "gold";
-          const rr = p.r * (0.95 + 0.55 * alpha);
-          if (lightweightParticles) {
-            g.fillStyle = gold
-              ? `rgba(255, 236, 192, ${0.62 * alpha})`
-              : `rgba(242, 248, 255, ${0.62 * alpha})`;
-            g.beginPath();
-            g.arc(px, py, rr * 0.95, 0, Math.PI * 2);
-            g.fill();
-            } else {
-              const grad = g.createRadialGradient(px, py, 0, px, py, rr * 2.4);
-              if (gold) {
-                grad.addColorStop(0, `rgba(255, 247, 228, ${0.92 * alpha})`);
-                grad.addColorStop(0.32, `rgba(255, 226, 166, ${0.56 * alpha})`);
-                grad.addColorStop(1, `rgba(255, 210, 120, 0)`);
-              } else {
-                grad.addColorStop(0, `rgba(255, 255, 255, ${0.95 * alpha})`);
-                grad.addColorStop(0.34, `rgba(228, 242, 255, ${0.56 * alpha})`);
-                grad.addColorStop(1, `rgba(196, 220, 242, 0)`);
+      for (let c = 0; c < cols; c++) {
+        let streak = 1;
+        for (let r = 1; r <= rows; r++) {
+          if (r < rows && board[r][c] === board[r - 1][c]) {
+            streak++;
+          } else {
+            if (streak >= 3) {
+              found = true;
+              for (let k = 0; k < streak; k++) {
+                matches[r - 1 - k][c] = true;
               }
-              g.shadowBlur = 10 * FX_PARTICLE_GLOW;
-              g.shadowColor = gold
-                ? `rgba(255, 218, 148, ${0.45 * alpha * FX_PARTICLE_GLOW})`
-                : `rgba(230, 242, 255, ${0.45 * alpha * FX_PARTICLE_GLOW})`;
-              g.fillStyle = grad;
-              g.beginPath();
-              g.arc(px, py, rr * 2.4, 0, Math.PI * 2);
-              g.fill();
-              g.fillStyle = gold
-                ? `rgba(255, 244, 220, ${0.72 * alpha})`
-              : `rgba(252, 255, 255, ${0.74 * alpha})`;
-            g.beginPath();
-            g.arc(px, py, rr * 0.78, 0, Math.PI * 2);
-            g.fill();
-            g.shadowBlur = 0;
+            }
+            streak = 1;
           }
         }
       }
-      g.restore();
+
+      return { matches, found };
     }
 
-    function updateMisses(currentTime) {
-      while (nextMissIndex < chart.length) {
-        const n = chart[nextMissIndex];
-        if (n.hit) {
-          nextMissIndex += 1;
-          continue;
-        }
-        if (n.type === "hold") {
-          const endTime = n.end + offsetSec;
-          const startTimeLocal = n.t + offsetSec;
-          if (currentTime - endTime > hitWindow) {
-            // Missed tail.
-            n.hit = true;
-            const ahMiss = activeHolds[n.lane];
-            if (ahMiss) stopHoldSustain(ahMiss);
-            activeHolds[n.lane] = null;
-            combo = 0;
-            ui.combo.textContent = "0";
-            nextMissIndex += 1;
-            continue;
+    function applyMatches(matches) {
+      let cleared = 0;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (matches[r][c]) {
+            cleared++;
+            board[r][c] = null;
+            const tile = getTileEl(r, c);
+            if (tile) tile.classList.add("match");
           }
-          // Auto-complete if still holding past end.
-          const ah = activeHolds[n.lane];
-          if (ah && ah.note === n && currentTime >= endTime) {
-            finishHoldSuccess(n, false);
-            nextMissIndex += 1;
-            continue;
+        }
+      }
+      return cleared;
+    }
+
+    function dropTiles() {
+      for (let c = 0; c < cols; c++) {
+        let pointer = rows - 1;
+        for (let r = rows - 1; r >= 0; r--) {
+          if (board[r][c] !== null) {
+            board[pointer][c] = board[r][c];
+            if (pointer !== r) board[r][c] = null;
+            pointer--;
           }
-          if (currentTime < startTimeLocal - hitWindow) break;
-          // not miss yet, wait.
-          break;
-        } else {
-          if (currentTime - (n.t + offsetSec) > hitWindow) {
-            n.hit = true;
-            combo = 0;
-            ui.combo.textContent = "0";
-            nextMissIndex += 1;
-            continue;
-          }
-          if (currentTime < n.t + offsetSec - hitWindow) break;
-          break;
+        }
+        for (let r = pointer; r >= 0; r--) {
+          board[r][c] = randColor();
         }
       }
     }
 
-    function loop() {
-      if (!running) return;
-      lastFrameTs = performance.now();
-      const audioNow = ctx ? ctx.currentTime : 0;
-      if (countdownActive && audioNow >= countdownEnd - 0.01) countdownActive = false;
-      const t = audioNow - startTime;
-      for (let lane = 0; lane < laneCount; lane += 1) {
-        const ah = activeHolds[lane];
-        if (!ah) continue;
-        if (particles.length > HEAVY_PARTICLE_THRESHOLD) continue;
-        if (!ah.lastTrail || t - ah.lastTrail > 0.12) {
-          spawnHoldTrail(lane, t);
-          ah.lastTrail = t;
-        }
-      }
-      updateMisses(t);
-      render(t, audioNow);
-      rafId = requestAnimationFrame(loop);
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    function spawnParticles(lane, perfect, t) {
-      const laneWidth = gameState.width / laneCount;
-      const baseX = lane * laneWidth + laneWidth / 2;
-      const baseY = gameState.judgeY - 6;
-      const budget = Math.max(3, MAX_PARTICLES - particles.length);
-      const count = Math.min(budget, perfect ? 10 : 7);
-      for (let i = 0; i < count; i += 1) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = (Math.random() * 78 + 58) * (perfect ? 1.08 : 1);
-        const tint = Math.random() < 0.34 ? "gold" : "white";
-        pushParticle({
-          x: baseX + (Math.random() * 16 - 8),
-          y: baseY + (Math.random() * 6 - 3),
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - 40,
-          r: Math.random() * 1.7 + 0.9,
-          tint,
-          t,
-          life: 0.32 + Math.random() * 0.14
-        });
-      }
-      if (budget > count + 2 && particles.length < HEAVY_PARTICLE_THRESHOLD) {
-        pushParticle({
-          kind: "ring",
-          tint: "white",
-          x: baseX,
-          y: baseY,
-          vx: 0,
-          vy: 0,
-          r: perfect ? 8 : 6.5,
-          expand: perfect ? 120 : 98,
-          t,
-          life: perfect ? 0.18 : 0.15
-        });
+    async function resolveBoard() {
+      let chain = 0;
+      while (true) {
+        const { matches, found } = findMatches();
+        if (!found) break;
+        chain++;
+        const cleared = applyMatches(matches);
+        score += cleared * 20 * chain;
+        updateStats();
+        await delay(180);
+        dropTiles();
+        renderBoard();
+        await delay(120);
       }
     }
 
-    function spawnHoldTrail(lane, t) {
-      const laneWidth = gameState.width / laneCount;
-      const x = lane * laneWidth + laneWidth / 2;
-      const y = gameState.judgeY - 6;
-      if (particles.length > HEAVY_PARTICLE_THRESHOLD) return;
-      for (let i = 0; i < 1; i += 1) {
-        const angle = (Math.random() - 0.5) * Math.PI;
-        const speed = 18 + Math.random() * 14;
-        pushParticle({
-          x: x + (Math.random() * 10 - 5),
-          y: y + (Math.random() * 4 - 2),
-          vx: Math.cos(angle) * speed,
-          vy: -Math.abs(Math.sin(angle) * speed) - 12,
-          r: 0.9 + Math.random() * 1.1,
-          tint: Math.random() < 0.3 ? "gold" : "white",
-          t,
-          life: 0.16 + Math.random() * 0.09
-        });
-      }
-    }
-
-    function finishHoldSuccess(note, silent = false) {
-      const ah = activeHolds[note.lane];
-      if (ah) stopHoldSustain(ah);
-      note.hit = true;
-      activeHolds[note.lane] = null;
-      if (silent) return;
-      combo += 1;
-      ui.combo.textContent = String(combo);
-      const gain = 160;
-      score += gain + combo * 2;
-      ui.score.textContent = String(score);
-      playHitSound("good");
-      spawnParticles(note.lane, false, ctx.currentTime - startTime);
-    }
-
-    function hitLane(lane) {
-      if (!running) return;
-      const t = ctx.currentTime - startTime;
-      laneFlash[lane] = t;
-      playHitSound("tap");
-
-      let bestIndex = -1;
-      let bestDelta = Infinity;
-
-      for (let i = nextMissIndex; i < chart.length; i += 1) {
-        const n = chart[i];
-        if (n.hit) continue;
-        if (n.lane !== lane) continue;
-        const d = Math.abs(t - (n.t + offsetSec));
-        if (d < bestDelta) {
-          bestDelta = d;
-          bestIndex = i;
-        }
-        if ((n.t + offsetSec) - t > hitWindow) break;
-      }
-
-      if (bestIndex >= 0 && bestDelta <= hitWindow) {
-        const note = chart[bestIndex];
-        if (note.type === "hold") {
-          // start hold
-          activeHolds[lane] = { note, start: t, lastTrail: t };
-          activeHolds[lane].sustain = startHoldSustain(lane, note);
-          // award head only (once)
-          const perfect = bestDelta <= perfectWindow;
-          const gain = perfect ? 280 : 180;
-          score += gain + combo * 2;
-          ui.score.textContent = String(score);
-          combo += 1;
-          ui.combo.textContent = String(combo);
-          laneFlash[lane] = t;
-          spawnParticles(lane, perfect, t);
-        } else {
-          note.hit = true;
-          const perfect = bestDelta <= perfectWindow;
-          const gain = perfect ? 300 : 180;
-          score += gain + combo * 2;
-          ui.score.textContent = String(score);
-          laneFlash[lane] = t;
-          playHitSound(perfect ? "perfect" : "good");
-          combo += 1;
-          ui.combo.textContent = String(combo);
-          spawnParticles(lane, perfect, t);
-        }
-      } else {
-        combo = 0;
-        ui.combo.textContent = "0";
-      }
-    }
-
-    function releaseLane(lane) {
-      if (!running) return;
-      const ah = activeHolds[lane];
-      const t = ctx.currentTime - startTime;
-      if (!ah) return;
-      const endTime = ah.note.end + offsetSec;
-      if (t >= endTime - hitWindow) {
-        finishHoldSuccess(ah.note);
-      } else {
-        // early release -> miss
-        stopHoldSustain(ah);
-        ah.note.hit = true;
-        activeHolds[lane] = null;
-        combo = 0;
-        ui.combo.textContent = "0";
-      }
-      while (nextMissIndex < chart.length && chart[nextMissIndex].hit) nextMissIndex += 1;
-    }
-
-    async function loadAudio(file) {
-      const audioCtx = ensureAudioContext();
-      const data = await file.arrayBuffer();
-      return audioCtx.decodeAudioData(data.slice(0));
-    }
-
-    async function loadSample() {
-      stopGame();
-      resetScore();
-      setStatus(t("status_analyzing"));
-      try {
-        const res = await fetch("assets/HaMfin.wav");
-        const buf = await res.arrayBuffer();
-        audioBuffer = await ensureAudioContext().decodeAudioData(buf.slice(0));
-        fileName = "HaM - Haze_zzZ";
-        currentSource = "audio";
-        midiOnsets = null;
-        midiPlaybackOnsets = null;
-        ui.analyze.disabled = false;
-        ui.bpm.textContent = "-";
-        ui.notes.textContent = "-";
-        ui.keyStat.textContent = "-";
-        ui.hold.textContent = "0";
-        ui.chord.textContent = "0";
-        setStatus(t("status_loaded", fileName));
-      } catch (err) {
-        setStatus(`Sample load failed: ${err.message || err}`, true);
-      }
-    }
-
-    async function startRecording() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        recordChunks = [];
-        recorder = new MediaRecorder(stream);
-        recorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) recordChunks.push(e.data);
-        };
-        recorder.onstop = async () => {
-          if (recordTimeout) {
-            clearTimeout(recordTimeout);
-            recordTimeout = null;
-          }
-          if (recordInterval) {
-            clearInterval(recordInterval);
-            recordInterval = null;
-          }
-          ui.recordTimer.textContent = "60s";
-          const blob = new Blob(recordChunks, { type: recorder.mimeType });
-          const buf = await blob.arrayBuffer();
-          audioBuffer = await ensureAudioContext().decodeAudioData(buf.slice(0));
-          fileName = "Mic Recording";
-          currentSource = "audio";
-          ui.analyze.disabled = false;
-          ui.bpm.textContent = "-";
-          ui.notes.textContent = "-";
-          ui.keyStat.textContent = "-";
-          setStatus(t("status_record_done"));
-          ui.record.disabled = false;
-          ui.stopRecord.disabled = true;
-          stream.getTracks().forEach((t) => t.stop());
-        };
-        recorder.start();
-        let remaining = 60;
-        ui.recordTimer.textContent = `${remaining}s`;
-        recordInterval = setInterval(() => {
-          remaining -= 1;
-          if (remaining <= 0) {
-            remaining = 0;
-            clearInterval(recordInterval);
-            recordInterval = null;
-          }
-          ui.recordTimer.textContent = `${remaining}s`;
-        }, 1000);
-        recordTimeout = setTimeout(() => {
-          if (recorder && recorder.state !== "inactive") {
-            recorder.stop();
-          }
-        }, 60000);
-        ui.record.disabled = true;
-        ui.stopRecord.disabled = false;
-        setStatus(t("status_recording"));
-      } catch (err) {
-        setStatus(`Recording failed: ${err.message || err}`, true);
-      }
-    }
-
-    function stopRecording() {
-      if (recorder && recorder.state !== "inactive") {
-        recorder.stop();
-      }
-    }
-
-    async function doAnalyze() {
-      if (!audioBuffer && !midiOnsets) return;
-      stopGame();
-      resetScore();
-      setStatus(t("status_analyzing"));
-      render(0);
-
-      await new Promise((r) => setTimeout(r, 30));
-      const midiSelected = !!(ui.midi.files && ui.midi.files.length);
-      if ((currentSource === "midi" || midiSelected) && midiOnsets) {
-        currentSource = "midi";
-        onsetsByMode = null;
-        estimatedBpm = midiBpm || 120;
-        const playbackSource = midiOnsets;
-        midiPlaybackOnsets = selectMidiPlaybackOnsets(playbackSource, midiDuration);
-        if (!midiPlaybackOnsets || !midiPlaybackOnsets.length) {
-          midiPlaybackOnsets = playbackSource;
-        }
-        // For MIDI gameplay, chart and background playback share the same 3-track source.
-        baseOnsets = midiPlaybackOnsets;
-        scrollTime = computeScrollTimeFromBpm(estimatedBpm, "midi");
-        if (midiTimeSig && (["4/4", "3/4", "5/4", "7/8", "6/8", "9/8", "12/8"].includes(midiTimeSig))) {
-          timeSig = midiTimeSig;
-        }
-        if (timeSig === "auto") {
-          const est = estimateTimeSignature(baseOnsets, estimatedBpm);
-          barBeats = est.beats;
-          ui.timeSigText.textContent = est.label;
-        } else {
-          const parsed = parseTimeSig(timeSig);
-          barBeats = parsed.beats;
-          ui.timeSigText.textContent = parsed.label;
-        }
-        const midiSeed = hashString([
-          fileName,
-          "midi",
-          estimatedBpm,
-          laneCount,
-          difficulty,
-          Number(ui.density.value).toFixed(2),
-          midiMode
-        ].join("|"));
-        const noteLimit = computeChartNoteLimit(midiDuration || (audioBuffer ? audioBuffer.duration : 240));
-        const midiBest = generateBestChart(
-          (rng) => buildChartFromMidi(baseOnsets, estimatedBpm, Number(ui.density.value), rng),
-          { attempts: 10, baseSeed: midiSeed, bpm: estimatedBpm, maxNotes: noteLimit }
-        );
-        chart = midiBest.chart;
-        for (const n of chart) n.hit = false;
-        ui.bpm.textContent = String(estimatedBpm);
-        ui.notes.textContent = String(chart.length);
-        ui.play.disabled = chart.length === 0;
-        ui.pause.disabled = chart.length === 0;
-        const byTime = new Map();
-        for (const n of chart) {
-          const k = n.t.toFixed(3);
-          byTime.set(k, (byTime.get(k) || 0) + 1);
-        }
-        let chordCount = 0;
-        for (const v of byTime.values()) if (v > 1) chordCount += 1;
-        const holdCount = chart.filter((n) => n.type === "hold").length;
-        ui.hold.textContent = String(holdCount);
-        ui.chord.textContent = String(chordCount);
-        if (chart.length === 0) {
-          setStatus(t("status_none"), true);
-        } else {
-          setStatus(`${t("status_ready", fileName)} (Hold ${holdCount}, Chord ${chordCount})`);
-        }
-        render(0);
+    async function trySwap(a, b) {
+      if (busy) return;
+      if (!isAdjacent(a, b)) return;
+      busy = true;
+      swap(a, b);
+      renderBoard();
+      await delay(120);
+      const { found } = findMatches();
+      if (!found) {
+        swap(a, b);
+        renderBoard();
+        await delay(120);
+        busy = false;
         return;
       }
-      let baseBuffer = audioBuffer;
-      const modeBuffers = {};
-      try {
-        modeBuffers.drum = await filterDrumBand(audioBuffer);
-        modeBuffers.bass = await filterBassBand(audioBuffer);
-        modeBuffers.guitar = await filterGuitarBand(audioBuffer);
-        modeBuffers.piano = await filterPianoBand(audioBuffer);
-        modeBuffers.vocal = await filterVocalBand(audioBuffer);
-      } catch (err) {
-        modeBuffers.drum = audioBuffer;
-        modeBuffers.bass = audioBuffer;
-        modeBuffers.guitar = audioBuffer;
-        modeBuffers.piano = audioBuffer;
-        modeBuffers.vocal = audioBuffer;
-      }
-
-      const sens = enhanceMode ? 1.35 : 1;
-      onsetsByMode = {
-        drum: analyzeOnsets(modeBuffers.drum, { sensitivity: sens }),
-        bass: analyzeOnsets(modeBuffers.bass, { sensitivity: sens }),
-        guitar: analyzeOnsets(modeBuffers.guitar, { sensitivity: sens }),
-        piano: analyzeOnsets(modeBuffers.piano, { sensitivity: sens }),
-        vocal: analyzeOnsets(modeBuffers.vocal, { sensitivity: sens }),
-        mix: analyzeOnsets(audioBuffer, { sensitivity: sens })
-      };
-
-      baseOnsets = enhanceMode
-        ? mergeOnsetsWeighted(onsetsByMode, { drum: 1.15, bass: 1.2, guitar: 1.0, piano: 0.9, vocal: 0.8, mix: 0.85 })
-        : onsetsByMode.mix;
-      estimatedBpm = estimateBpmFromOnsets(baseOnsets);
-      scrollTime = computeScrollTimeFromBpm(estimatedBpm, "audio");
-      const keyInfo = estimateKeyFromBuffer(audioBuffer);
-      keyLabel = keyInfo.label;
-      keyBaseFreq = 440 * Math.pow(2, (keyInfo.root - 9) / 12) * 4;
-      ui.keyStat.textContent = keyLabel;
-      beatOffset = beatTrack ? estimateBeatPhase(baseOnsets, estimatedBpm) : 0;
-      if (timeSig === "auto") {
-        const est = estimateTimeSignature(baseOnsets, estimatedBpm);
-        barBeats = est.beats;
-        ui.timeSigText.textContent = est.label;
-      } else {
-        const parsed = parseTimeSig(timeSig);
-        barBeats = parsed.beats;
-        ui.timeSigText.textContent = parsed.label;
-      }
-      const barSec = (60 / estimatedBpm) * barBeats;
-      const noteLimit = computeChartNoteLimit(audioBuffer ? audioBuffer.duration : 240);
-
-      if (focusMode === "auto") {
-        const autoModes = {
-          drum: onsetsByMode.drum,
-          bass: onsetsByMode.bass,
-          guitar: onsetsByMode.guitar,
-          piano: onsetsByMode.piano,
-          vocal: onsetsByMode.vocal,
-          mix: onsetsByMode.mix
-        };
-        const autoSeed = hashString([
-          fileName,
-          "audio-auto",
-          estimatedBpm,
-          laneCount,
-          difficulty,
-          Number(ui.density.value).toFixed(2),
-          focusMode,
-          timeSig
-        ].join("|"));
-        const autoBest = generateBestChart(
-          (rng) => buildChartAuto(autoModes, estimatedBpm, Number(ui.density.value), beatOffset, beatLock, barSec, rng),
-          { attempts: 12, baseSeed: autoSeed, bpm: estimatedBpm, maxNotes: noteLimit }
-        );
-        chart = autoBest.chart;
-      } else {
-        const chosen = onsetsByMode[focusMode] || onsetsByMode.mix;
-        const modeSeed = hashString([
-          fileName,
-          "audio-mode",
-          estimatedBpm,
-          laneCount,
-          difficulty,
-          Number(ui.density.value).toFixed(2),
-          focusMode,
-          timeSig
-        ].join("|"));
-        const modeBest = generateBestChart(
-          (rng) => buildChartFromOnsets(chosen, estimatedBpm, Number(ui.density.value), beatOffset, beatLock, rng),
-          { attempts: 10, baseSeed: modeSeed, bpm: estimatedBpm, maxNotes: noteLimit }
-        );
-        chart = modeBest.chart;
-      }
-      for (const n of chart) n.hit = false;
-
-      ui.bpm.textContent = String(estimatedBpm);
-      ui.notes.textContent = String(chart.length);
-      ui.hold.textContent = "0";
-      ui.chord.textContent = "0";
-      const holdCount = chart.filter((n) => n.type === "hold").length;
-      const byTime = new Map();
-      for (const n of chart) {
-        const k = n.t.toFixed(3);
-        byTime.set(k, (byTime.get(k) || 0) + 1);
-      }
-      let chordCount = 0;
-      for (const v of byTime.values()) if (v > 1) chordCount += 1;
-      ui.hold.textContent = String(holdCount);
-      ui.chord.textContent = String(chordCount);
-      if (chart.length === 0) {
-        setStatus(t("status_none"), true);
-      } else {
-        setStatus(`${t("status_ready", fileName)} (Hold ${holdCount}, Chord ${chordCount})`);
-      }
-      ui.play.disabled = chart.length === 0;
-      ui.pause.disabled = chart.length === 0;
-      ui.regen.disabled = chart.length === 0;
-      // Keep the debug counts in status when available.
-      render(0);
+      moves--;
+      updateStats();
+      await resolveBoard();
+      checkGame();
+      busy = false;
     }
 
-    function regenChart() {
-      if (!baseOnsets.length) return;
-      stopGame();
-      resetScore();
-      scrollTime = computeScrollTimeFromBpm(estimatedBpm, currentSource === "midi" ? "midi" : "audio");
-      beatOffset = beatTrack ? estimateBeatPhase(baseOnsets, estimatedBpm) : 0;
-      if (timeSig === "auto") {
-        const est = estimateTimeSignature(baseOnsets, estimatedBpm);
-        barBeats = est.beats;
-        ui.timeSigText.textContent = est.label;
+    function checkGame() {
+      if (score >= target) {
+        setMessage("太棒了！目标完成！");
+      } else if (moves <= 0) {
+        setMessage("本局结束，再来一次吧！");
       } else {
-        const parsed = parseTimeSig(timeSig);
-        barBeats = parsed.beats;
-        ui.timeSigText.textContent = parsed.label;
+        setMessage("");
       }
-      const barSec = (60 / estimatedBpm) * barBeats;
-      if (currentSource === "midi") {
-        const midiSeed = hashString([
-          fileName,
-          "midi-regen",
-          estimatedBpm,
-          laneCount,
-          difficulty,
-          Number(ui.density.value).toFixed(2),
-          midiMode
-        ].join("|"));
-        const noteLimit = computeChartNoteLimit(midiDuration || (audioBuffer ? audioBuffer.duration : 240));
-        const midiBest = generateBestChart(
-          (rng) => buildChartFromMidi(baseOnsets, estimatedBpm, Number(ui.density.value), rng),
-          { attempts: 10, baseSeed: midiSeed, bpm: estimatedBpm, maxNotes: noteLimit }
-        );
-        chart = midiBest.chart;
-      } else {
-        if (!onsetsByMode) return;
-        const noteLimit = computeChartNoteLimit(audioBuffer ? audioBuffer.duration : 240);
-        if (focusMode === "auto") {
-          const autoModes = {
-            drum: onsetsByMode.drum,
-            bass: onsetsByMode.bass,
-            guitar: onsetsByMode.guitar,
-            piano: onsetsByMode.piano,
-            vocal: onsetsByMode.vocal,
-            mix: onsetsByMode.mix
-          };
-          const autoSeed = hashString([
-            fileName,
-            "audio-auto-regen",
-            estimatedBpm,
-            laneCount,
-            difficulty,
-            Number(ui.density.value).toFixed(2),
-            focusMode,
-            timeSig
-          ].join("|"));
-          const autoBest = generateBestChart(
-            (rng) => buildChartAuto(autoModes, estimatedBpm, Number(ui.density.value), beatOffset, beatLock, barSec, rng),
-            { attempts: 12, baseSeed: autoSeed, bpm: estimatedBpm, maxNotes: noteLimit }
-          );
-          chart = autoBest.chart;
-        } else {
-          const chosen = onsetsByMode[focusMode] || onsetsByMode.mix;
-          const modeSeed = hashString([
-            fileName,
-            "audio-mode-regen",
-            estimatedBpm,
-            laneCount,
-            difficulty,
-            Number(ui.density.value).toFixed(2),
-            focusMode,
-            timeSig
-          ].join("|"));
-          const modeBest = generateBestChart(
-            (rng) => buildChartFromOnsets(chosen, estimatedBpm, Number(ui.density.value), beatOffset, beatLock, rng),
-            { attempts: 10, baseSeed: modeSeed, bpm: estimatedBpm, maxNotes: noteLimit }
-          );
-          chart = modeBest.chart;
+    }
+
+    function resetGame() {
+      score = 0;
+      moves = 20;
+      target = 1200;
+      updateStats();
+      setMessage("");
+      fillBoard();
+      renderBoard();
+    }
+
+    function shuffleBoard() {
+      if (busy) return;
+      let attempts = 0;
+      do {
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            board[r][c] = randColor();
+          }
         }
-      }
-      for (const n of chart) n.hit = false;
-      ui.notes.textContent = String(chart.length);
-      const holdCount = chart.filter((n) => n.type === "hold").length;
-      const byTime = new Map();
-      for (const n of chart) {
-        const k = n.t.toFixed(3);
-        byTime.set(k, (byTime.get(k) || 0) + 1);
-      }
-      let chordCount = 0;
-      for (const v of byTime.values()) if (v > 1) chordCount += 1;
-      ui.hold.textContent = String(holdCount);
-      ui.chord.textContent = String(chordCount);
-      ui.play.disabled = chart.length === 0;
-      ui.pause.disabled = chart.length === 0;
-      setStatus(t("status_regen", Number(ui.density.value).toFixed(2)), chart.length === 0);
-      render(0);
+        attempts++;
+      } while (attempts < 10 && findMatches().found);
+      renderBoard();
+      setMessage("已洗牌");
     }
 
-    async function startGame() {
-      if (!audioBuffer || !chart.length) return;
-      const audioCtx = ensureAudioContext();
-      if (audioCtx.state === "suspended") await audioCtx.resume();
-
-      stopGame();
-      resetScore();
-      for (const n of chart) n.hit = false;
-
-      const preRoll = 3.0;
-      sourceNode = audioCtx.createBufferSource();
-      sourceNode.buffer = audioBuffer;
-      sourceNode.connect(audioCtx.destination);
-      sourceNode.onended = () => {
-        running = false;
-        cancelAnimationFrame(rafId);
-        stopMidiSynth();
-        setStatus(t("status_end", score));
-        render(audioBuffer.duration + 1);
-      };
-
-      pauseOffset = 0;
-      startTime = audioCtx.currentTime + preRoll + 0.08;
-      countdownEnd = startTime;
-      countdownActive = true;
-      sourceNode.start(startTime);
-      if (currentSource === "midi" && midiOnsets) {
-        scheduleMidiSynth(midiPlaybackOnsets && midiPlaybackOnsets.length ? midiPlaybackOnsets : midiOnsets, estimatedBpm);
-      }
-      running = true;
-      paused = false;
-      nextMissIndex = 0;
-      setStatus(t("status_playing"));
-      loop();
+    function tileFromPoint(x, y) {
+      const el = document.elementFromPoint(x, y);
+      const tile = el ? el.closest(".tile") : null;
+      if (!tile) return null;
+      return { r: Number(tile.dataset.row), c: Number(tile.dataset.col), el: tile };
     }
 
-    async function togglePause() {
-      if (!audioBuffer || !chart.length) return;
-      const audioCtx = ensureAudioContext();
-      if (audioCtx.state === "suspended") await audioCtx.resume();
-      if (!paused && running) {
-        pauseOffset = audioCtx.currentTime - startTime;
-        running = false;
-        paused = true;
-        cancelAnimationFrame(rafId);
-        stopMidiSynth();
-        if (sourceNode) {
-          sourceNode.stop(0);
-          sourceNode.disconnect();
-          sourceNode = null;
-        }
-        ui.pause.textContent = t("btn_resume");
+    async function handleTapSwap(target) {
+      if (!selected) {
+        selected = { r: target.r, c: target.c };
+        target.el.classList.add("selected");
         return;
       }
-      if (paused) {
-        sourceNode = audioCtx.createBufferSource();
-        sourceNode.buffer = audioBuffer;
-        sourceNode.connect(audioCtx.destination);
-        sourceNode.onended = () => {
-          running = false;
-          paused = false;
-          cancelAnimationFrame(rafId);
-          stopMidiSynth();
-          setStatus(t("status_end", score));
-          render(audioBuffer.duration + 1);
-          ui.pause.textContent = t("btn_pause");
-        };
-        startTime = audioCtx.currentTime - pauseOffset;
-        sourceNode.start(0, pauseOffset);
-        if (currentSource === "midi" && midiOnsets) {
-          scheduleMidiSynth(midiPlaybackOnsets && midiPlaybackOnsets.length ? midiPlaybackOnsets : midiOnsets, estimatedBpm);
-        }
-        running = true;
-        paused = false;
-        setStatus(t("status_playing"));
-        ui.pause.textContent = t("btn_pause");
-        loop();
-      }
-    }
-
-    ui.file.addEventListener("change", async (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      fileName = file.name;
-      setStatus("正在解码音频…");
-      currentSource = "audio";
-      midiOnsets = null;
-      midiPlaybackOnsets = null;
-      ui.analyze.disabled = true;
-      ui.play.disabled = true;
-      ui.pause.disabled = true;
-      ui.regen.disabled = true;
-      stopGame();
-      resetScore();
-      onsetsByMode = null;
-      midiPlaybackOnsets = null;
-
-      try {
-        audioBuffer = await loadAudio(file);
-        setStatus(t("status_loaded", fileName));
-        ui.analyze.disabled = false;
-        ui.bpm.textContent = "-";
-        ui.notes.textContent = "-";
-        ui.keyStat.textContent = "-";
-        ui.hold.textContent = "0";
-        ui.chord.textContent = "0";
-      } catch (err) {
-        audioBuffer = null;
-        setStatus(`音频加载失败：${err.message || err}`, true);
-      }
-    });
-
-    ui.midi.addEventListener("change", async (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      stopGame();
-      resetScore();
-      chart = [];
-      onsetsByMode = null;
-      ui.play.disabled = true;
-      ui.pause.disabled = true;
-      ui.regen.disabled = true;
-      currentSource = "midi";
-      try {
-        const buf = await file.arrayBuffer();
-        const parsed = parseMidi(buf);
-        midiOnsets = parsed.onsets;
-        midiPlaybackOnsets = null;
-        midiBpm = parsed.bpm;
-        midiTimeSig = parsed.timeSig;
-        midiDuration = parsed.duration;
-        fileName = file.name.replace(/\.(mid|midi)$/i, "");
-        audioBuffer = createSilentBuffer(Math.max(2, midiDuration + 1));
-        setStatus(t("status_midi_loaded", fileName));
-        ui.analyze.disabled = false;
-        ui.bpm.textContent = midiBpm ? String(midiBpm) : "-";
-        ui.notes.textContent = "-";
-        ui.keyStat.textContent = "-";
-        ui.hold.textContent = "0";
-        ui.chord.textContent = "0";
-        ui.midiModeText.textContent = t(`midi_${midiMode}`) || t("midi_auto");
-      } catch (err) {
-        setStatus(`MIDI 读取失败：${err.message || err}`, true);
-      }
-    });
-
-    ui.midiMode.addEventListener("change", () => {
-      midiMode = ui.midiMode.value;
-      ui.midiModeText.textContent = t(`midi_${midiMode}`) || t("midi_auto");
-      if (currentSource === "midi" && midiOnsets) {
-        doAnalyze();
-      }
-    });
-
-    ui.density.addEventListener("input", () => {
-      ui.densityText.textContent = `${Number(ui.density.value).toFixed(2)}x`;
-      ui.difficultyText.textContent = t("custom");
-    });
-
-    ui.offset.addEventListener("input", () => {
-      offsetSec = Number(ui.offset.value) / 1000;
-      ui.offsetText.textContent = `${ui.offset.value} ms`;
-    });
-
-    ui.focusMode.addEventListener("change", () => {
-      focusMode = ui.focusMode.value;
-      applyI18n();
-    });
-
-    ui.beatTrack.addEventListener("change", () => {
-      beatTrack = ui.beatTrack.checked;
-      ui.beatText.textContent = beatTrack ? t("beat_on") : t("beat_off");
-    });
-
-    ui.enhanceMode.addEventListener("change", () => {
-      enhanceMode = ui.enhanceMode.checked;
-      ui.enhanceText.textContent = enhanceMode ? t("enhance_on") : t("enhance_off");
-    });
-
-    ui.timeSig.addEventListener("change", () => {
-      timeSig = ui.timeSig.value;
-      ui.timeSigText.textContent = timeSig === "auto" ? t("time_auto") : timeSig;
-    });
-
-    ui.beatLock.addEventListener("input", () => {
-      beatLock = Number(ui.beatLock.value);
-      ui.beatLockText.textContent = `${Math.round(beatLock * 100)}%`;
-    });
-
-    ui.sfxVolume.addEventListener("input", () => {
-      sfxVolume = Number(ui.sfxVolume.value);
-      ui.sfxText.textContent = `${Math.round(sfxVolume * 100)}%`;
-    });
-
-    ui.fxQuality.addEventListener("change", () => {
-      fxQuality = ui.fxQuality.value;
-      applyFxQuality(fxQuality);
-      ui.fxQualityText.textContent = t(`fx_${fxQuality}`);
-    });
-
-    ui.themeSelect.addEventListener("change", () => {
-      applyTheme(ui.themeSelect.value);
-    });
-
-    ui.keyReset.addEventListener("click", () => {
-      keyBindings = defaultKeyBindings(laneCount);
-      saveKeyBindings(laneCount, keyBindings);
-      bindingLane = null;
-      buildKeyMap();
-    });
-
-    ui.difficulty.addEventListener("change", () => {
-      difficulty = ui.difficulty.value;
-      updateDifficulty();
-    });
-
-    ui.laneCount.addEventListener("change", () => {
-      laneCount = Number(ui.laneCount.value);
-      ui.laneText.textContent = `${laneCount} 键`;
-      bindingLane = null;
-      buildKeyMap();
-      if (onsetsByMode && baseOnsets.length) {
-        regenChart();
-      } else {
-        render(0);
-      }
-    });
-
-    const guide = document.getElementById("guide");
-    const guideOk = document.getElementById("guideOk");
-    const guideHide = document.getElementById("guideHide");
-    const mobileToggle = document.getElementById("mobileToggle");
-    const leftPanel = document.querySelector(".left");
-    const updateMobileToggle = () => {
-      const isCollapsed = leftPanel.classList.contains("collapsed");
-      mobileToggle.textContent = isCollapsed ? t("mobile_open") : t("mobile_close");
-    };
-    const hideGuide = () => {
-      guide.style.display = "none";
-    };
-    if (localStorage.getItem("hideGuide") === "1") {
-      hideGuide();
-    }
-    guideOk.addEventListener("click", hideGuide);
-    guideHide.addEventListener("click", () => {
-      localStorage.setItem("hideGuide", "1");
-      hideGuide();
-    });
-    mobileToggle.addEventListener("click", () => {
-      leftPanel.classList.toggle("collapsed");
-      updateMobileToggle();
-    });
-
-    ui.analyze.addEventListener("click", doAnalyze);
-    ui.regen.addEventListener("click", regenChart);
-    ui.play.addEventListener("click", startGame);
-    ui.pause.addEventListener("click", togglePause);
-    ui.sample.addEventListener("click", loadSample);
-    ui.record.addEventListener("click", startRecording);
-    ui.stopRecord.addEventListener("click", stopRecording);
-
-    // Watchdog: restart the render loop if it stalls while audio keeps playing.
-    setInterval(() => {
-      if (!running || paused || !ctx) return;
-      const now = performance.now();
-      if (lastFrameTs && now - lastFrameTs > 600) {
-        cancelAnimationFrame(rafId);
-        loop();
-      }
-    }, 500);
-
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && running && !paused) {
-        cancelAnimationFrame(rafId);
-        loop();
-      }
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if (bindingLane !== null) {
-        const key = e.key.toLowerCase();
-        if (["shift", "control", "alt", "meta"].includes(key)) return;
-        const existing = keyBindings.indexOf(key);
-        if (existing >= 0 && existing !== bindingLane) {
-          const temp = keyBindings[existing];
-          keyBindings[existing] = keyBindings[bindingLane];
-          keyBindings[bindingLane] = temp;
-        } else {
-          keyBindings[bindingLane] = key;
-        }
-        saveKeyBindings(laneCount, keyBindings);
-        bindingLane = null;
-        buildKeyMap();
-        e.preventDefault();
+      if (selected.r === target.r && selected.c === target.c) {
+        clearSelection();
         return;
       }
-      const lane = keyMap[e.key.toLowerCase()];
-      if (lane === undefined) return;
-      if (pressedKeys.has(e.key.toLowerCase())) return;
-      pressedKeys.add(e.key.toLowerCase());
-      ui.keyEls[lane].classList.add("hit");
-      setTimeout(() => ui.keyEls[lane].classList.remove("hit"), 80);
-      hitLane(lane);
+      const prev = selected;
+      clearSelection();
+      await trySwap(prev, { r: target.r, c: target.c });
+    }
+
+    boardEl.addEventListener("pointerdown", (event) => {
+      if (busy || moves <= 0) return;
+      const target = tileFromPoint(event.clientX, event.clientY);
+      if (!target) return;
+      pointerId = event.pointerId;
+      dragStart = { x: event.clientX, y: event.clientY };
+      swapTriggered = false;
+      boardEl.setPointerCapture(pointerId);
+      handleTapSwap(target);
     });
 
-    window.addEventListener("keyup", (e) => {
-      const lane = keyMap[e.key.toLowerCase()];
-      if (lane === undefined) return;
-      pressedKeys.delete(e.key.toLowerCase());
-      releaseLane(lane);
+    boardEl.addEventListener("pointermove", async (event) => {
+      if (busy || moves <= 0 || pointerId !== event.pointerId || !selected) return;
+      const dx = event.clientX - dragStart.x;
+      const dy = event.clientY - dragStart.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 8 || swapTriggered) return;
+      const target = tileFromPoint(event.clientX, event.clientY);
+      if (!target) return;
+      if (!isAdjacent(selected, target)) return;
+      swapTriggered = true;
+      const prev = selected;
+      clearSelection();
+      await trySwap(prev, { r: target.r, c: target.c });
     });
 
-    const langToggle = document.getElementById("langToggle");
-    langToggle.addEventListener("change", () => {
-      lang = langToggle.value;
-      applyI18n();
-      ui.densityText.textContent = `${Number(ui.density.value).toFixed(2)}x`;
-      ui.offsetText.textContent = `${ui.offset.value} ms`;
-      ui.sfxText.textContent = `${Math.round(sfxVolume * 100)}%`;
-      ui.themeText.textContent = t(themePresets[theme]?.label || "theme_silver");
-      ui.status.textContent = t("status_idle");
-      updateMobileToggle();
+    boardEl.addEventListener("pointerup", (event) => {
+      if (pointerId === event.pointerId) {
+        pointerId = null;
+        dragStart = null;
+      }
     });
 
-    buildKeyMap();
-    updateDifficulty();
-    ui.sfxText.textContent = `${Math.round(sfxVolume * 100)}%`;
-    ui.fxQualityText.textContent = t("fx_high");
-    applyI18n();
-    theme = localStorage.getItem("theme") || "silver";
-    applyTheme(theme, false);
-    ui.status.textContent = t("status_idle");
-    ui.recordTimer.textContent = "60s";
-    updateMobileToggle();
-    render(0);
+    boardEl.addEventListener("pointercancel", () => {
+      pointerId = null;
+      dragStart = null;
+      clearSelection();
+    });
+
+    document.getElementById("restart").addEventListener("click", () => {
+      resetGame();
+    });
+
+    document.getElementById("shuffle").addEventListener("click", () => {
+      shuffleBoard();
+    });
+
+    document.getElementById("help").addEventListener("click", () => {
+      tipsEl.textContent = "玩法：点击或拖动相邻方块交换，三连即可消除。每次交换消耗一步，连锁消除会有额外加分。";
+    });
+
+    resetGame();
   </script>
 </body>
 </html>
