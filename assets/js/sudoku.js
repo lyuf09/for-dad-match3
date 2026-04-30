@@ -1,0 +1,241 @@
+const boardEl = document.getElementById("board");
+    const padEl = document.getElementById("pad");
+    const messageEl = document.getElementById("message");
+
+    const base = 3;
+    const side = base * base;
+
+    let solution = [];
+    let puzzle = [];
+    let fixed = [];
+    let notes = [];
+    let selected = null;
+    let holes = 40;
+    let noteMode = false;
+
+    function markReady() {
+      if (window.ChronohazeLoader) {
+        window.ChronohazeLoader.ready();
+        return;
+      }
+      requestAnimationFrame(() => {
+        document.body.classList.remove("is-loading");
+        document.body.classList.add("is-ready");
+      });
+    }
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function pattern(r, c) {
+      return (base * (r % base) + Math.floor(r / base) + c) % side;
+    }
+
+    function generateSolution() {
+      const rBase = Array.from({ length: base }, (_, i) => i);
+      const rows = shuffle(rBase)
+        .flatMap(g => shuffle(rBase).map(r => g * base + r));
+      const cols = shuffle(rBase)
+        .flatMap(g => shuffle(rBase).map(c => g * base + c));
+      const nums = shuffle(Array.from({ length: side }, (_, i) => i + 1));
+
+      const grid = Array.from({ length: side }, () => Array(side).fill(0));
+      for (let r = 0; r < side; r++) {
+        for (let c = 0; c < side; c++) {
+          grid[r][c] = nums[pattern(rows[r], cols[c])];
+        }
+      }
+      return grid;
+    }
+
+    function makePuzzle(grid, holeCount = 40) {
+      const puzzleGrid = grid.map(row => [...row]);
+      let count = holeCount;
+      while (count > 0) {
+        const r = Math.floor(Math.random() * side);
+        const c = Math.floor(Math.random() * side);
+        if (puzzleGrid[r][c] !== 0) {
+          puzzleGrid[r][c] = 0;
+          count--;
+        }
+      }
+      return puzzleGrid;
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = "";
+      for (let r = 0; r < side; r++) {
+        for (let c = 0; c < side; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          const val = puzzle[r][c];
+          if (val !== 0) {
+            cell.textContent = val;
+            if (fixed[r][c]) cell.classList.add("given");
+          } else if (notes[r][c].size > 0) {
+            const wrap = document.createElement("div");
+            wrap.className = "notes";
+            for (let n = 1; n <= 9; n++) {
+              const span = document.createElement("div");
+              span.className = "note";
+              span.textContent = notes[r][c].has(n) ? n : "";
+              wrap.appendChild(span);
+            }
+            cell.appendChild(wrap);
+          }
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function renderPad() {
+      padEl.innerHTML = "";
+      for (let n = 1; n <= 9; n++) {
+        const btn = document.createElement("button");
+        btn.textContent = n;
+        btn.addEventListener("click", () => setNumber(n));
+        padEl.appendChild(btn);
+      }
+      const erase = document.createElement("button");
+      erase.textContent = "清除";
+      erase.addEventListener("click", () => setNumber(0));
+      padEl.appendChild(erase);
+    }
+
+    function setMessage(text) {
+      messageEl.textContent = text || "";
+    }
+
+    function clearHighlights() {
+      document.querySelectorAll(".cell").forEach(cell => {
+        cell.classList.remove("selected", "same", "error");
+      });
+    }
+
+    function highlight(r, c) {
+      clearHighlights();
+      const val = puzzle[r][c];
+      document.querySelectorAll(".cell").forEach(cell => {
+        const cr = Number(cell.dataset.row);
+        const cc = Number(cell.dataset.col);
+        if (cr === r && cc === c) cell.classList.add("selected");
+        if (val !== 0 && puzzle[cr][cc] === val) cell.classList.add("same");
+        if (cr === r || cc === c) cell.classList.add("same");
+        if (Math.floor(cr / 3) === Math.floor(r / 3) && Math.floor(cc / 3) === Math.floor(c / 3)) {
+          cell.classList.add("same");
+        }
+      });
+    }
+
+    function isValid(r, c, val) {
+      for (let i = 0; i < side; i++) {
+        if (i !== c && puzzle[r][i] === val) return false;
+        if (i !== r && puzzle[i][c] === val) return false;
+      }
+      const br = Math.floor(r / 3) * 3;
+      const bc = Math.floor(c / 3) * 3;
+      for (let rr = br; rr < br + 3; rr++) {
+        for (let cc = bc; cc < bc + 3; cc++) {
+          if ((rr !== r || cc !== c) && puzzle[rr][cc] === val) return false;
+        }
+      }
+      return true;
+    }
+
+    function setNumber(val) {
+      if (!selected) return;
+      const { r, c } = selected;
+      if (fixed[r][c]) return;
+      if (noteMode) {
+        if (val === 0) {
+          notes[r][c].clear();
+        } else if (puzzle[r][c] === 0) {
+          if (notes[r][c].has(val)) notes[r][c].delete(val);
+          else notes[r][c].add(val);
+        }
+      } else {
+        puzzle[r][c] = val;
+        notes[r][c].clear();
+      }
+      renderBoard();
+      highlight(r, c);
+      checkWin();
+    }
+
+    function checkErrors() {
+      let hasError = false;
+      document.querySelectorAll(".cell").forEach(cell => {
+        const r = Number(cell.dataset.row);
+        const c = Number(cell.dataset.col);
+        const val = puzzle[r][c];
+        if (val !== 0 && !isValid(r, c, val)) {
+          cell.classList.add("error");
+          hasError = true;
+        }
+      });
+      setMessage(hasError ? "有重复数字，请检查红色格子" : "看起来没有错误！");
+    }
+
+    function checkWin() {
+      for (let r = 0; r < side; r++) {
+        for (let c = 0; c < side; c++) {
+          if (puzzle[r][c] === 0 || !isValid(r, c, puzzle[r][c])) {
+            return;
+          }
+        }
+      }
+      setMessage("太棒了！数独完成！");
+    }
+
+    function newGame() {
+      solution = generateSolution();
+      puzzle = makePuzzle(solution, holes);
+      fixed = puzzle.map(row => row.map(val => val !== 0));
+      notes = Array.from({ length: side }, () =>
+        Array.from({ length: side }, () => new Set())
+      );
+      selected = null;
+      setMessage("");
+      renderBoard();
+    }
+
+    boardEl.addEventListener("pointerdown", (event) => {
+      const cell = event.target.closest(".cell");
+      if (!cell) return;
+      const r = Number(cell.dataset.row);
+      const c = Number(cell.dataset.col);
+      selected = { r, c };
+      highlight(r, c);
+    });
+
+    document.getElementById("new").addEventListener("click", newGame);
+    document.getElementById("check").addEventListener("click", checkErrors);
+    document.getElementById("clear").addEventListener("click", () => setNumber(0));
+    document.getElementById("noteMode").addEventListener("click", () => {
+      noteMode = !noteMode;
+      const btn = document.getElementById("noteMode");
+      btn.textContent = noteMode ? "备注：开" : "备注：关";
+      btn.classList.toggle("active", noteMode);
+    });
+    document.getElementById("difficulty").addEventListener("change", (event) => {
+      const level = event.target.value;
+      if (level === "easy") holes = 30;
+      else if (level === "normal") holes = 40;
+      else if (level === "hard") holes = 50;
+      else if (level === "master") holes = 56;
+      else if (level === "hell") holes = 60;
+      else holes = 64;
+      newGame();
+    });
+
+    renderPad();
+    newGame();
+    markReady();

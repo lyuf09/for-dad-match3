@@ -4,118 +4,107 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>爸爸的游戏合集</title>
+  <script>document.documentElement.classList.add('has-loader');</script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Rubik:wght@400;600;800&display=swap');
-
     :root {
-      --bg-1: #0b1320;
-      --bg-2: #1b2a44;
-      --panel: rgba(12, 18, 32, 0.92);
-      --panel-line: rgba(255, 255, 255, 0.12);
-      --text: #eef4ff;
-      --muted: #9fb0c9;
-      --accent: #ffd77a;
-      --shadow: 0 18px 36px rgba(5, 8, 16, 0.55);
-      --radius: 18px;
+      --loader-bg-1: #0b1320;
+      --loader-bg-2: #1b2a44;
+      --loader-text: #eef4ff;
+      --loader-accent: #ffd77a;
     }
 
-    * { box-sizing: border-box; }
+    .has-loader,
+    .has-loader body {
+      min-height: 100%;
+      background: var(--loader-bg-1);
+    }
 
-    body {
+    .has-loader body {
       margin: 0;
-      font-family: "Rubik", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-      color: var(--text);
-      min-height: 100vh;
+      color: var(--loader-text);
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    .has-loader body.is-loading {
+      overflow: hidden;
+    }
+
+    .has-loader body.is-loading .app {
+      visibility: hidden;
+    }
+
+    .has-loader body.is-ready .app {
+      visibility: visible;
+    }
+
+    .has-loader .page-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: var(--loader-text);
       background:
         radial-gradient(60vmax 48vmax at 20% -10%, rgba(255, 225, 165, 0.14), transparent 60%),
         radial-gradient(50vmax 45vmax at 85% 100%, rgba(125, 170, 255, 0.2), transparent 65%),
-        linear-gradient(180deg, var(--bg-2), var(--bg-1));
+        linear-gradient(180deg, var(--loader-bg-2), var(--loader-bg-1));
+    }
+
+    .has-loader body.is-loading .page-loader {
+      display: flex;
+    }
+
+    .has-loader body.is-ready .page-loader {
+      display: none;
+    }
+
+    .page-loader__panel {
       display: grid;
-      place-items: center;
-      padding: 18px;
-    }
-
-    .app {
-      width: min(960px, 100%);
-      display: grid;
-      gap: 16px;
-    }
-
-    .header {
-      text-align: center;
-      display: grid;
-      gap: 8px;
-    }
-
-    h1 {
-      margin: 0;
-      font-family: "ZCOOL QingKe HuangYou", "Rubik", sans-serif;
-      font-size: clamp(26px, 5.4vw, 44px);
-      letter-spacing: 2px;
-    }
-
-    .subtitle {
-      color: var(--muted);
-      font-size: clamp(14px, 3.2vw, 16px);
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--panel-line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      backdrop-filter: blur(8px);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      justify-items: center;
       gap: 12px;
+      padding: 18px 22px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(9, 14, 27, 0.72);
+      box-shadow: 0 18px 36px rgba(5, 8, 16, 0.45);
     }
 
-    .card {
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 14px;
-      display: grid;
-      gap: 10px;
-      background: linear-gradient(150deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+    .page-loader__dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 35%, #fff6cb 0 30%, var(--loader-accent) 30% 62%, rgba(255,215,122,0.28) 62% 100%);
+      box-shadow: 0 0 22px rgba(255, 215, 122, 0.42);
+      animation: loaderPulse 0.95s ease-in-out infinite alternate;
     }
 
-    .card h2 {
-      margin: 0;
-      font-size: 20px;
+    .page-loader__text {
+      font-size: 14px;
+      letter-spacing: 0.04em;
     }
 
-    .card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.5;
+    @keyframes loaderPulse {
+      from { transform: scale(0.88); opacity: 0.72; }
+      to { transform: scale(1.08); opacity: 1; }
     }
 
-    .play {
-      border: none;
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      background: linear-gradient(160deg, #ffd77a, #ffb95f);
-      color: #1b1b1b;
-      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.28);
-    }
-
-    .footer {
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
+    @media (prefers-reduced-motion: reduce) {
+      .page-loader__dot {
+        animation: none;
+      }
     }
   </style>
+  <link rel="stylesheet" href="assets/css/home.min.css?v=20260430-loader1" data-page-style />
 </head>
-<body>
+<body class="is-loading">
+  <div class="page-loader" aria-hidden="true">
+    <div class="page-loader__panel">
+      <div class="page-loader__dot"></div>
+      <div class="page-loader__text">正在准备游戏…</div>
+    </div>
+  </div>
   <div class="app">
     <div class="header">
       <h1>爸爸的游戏合集</h1>
@@ -123,15 +112,15 @@
     </div>
 
     <div class="panel grid">
-      <div class="card">
+      <div class="card game-card" data-href="./match3/" tabindex="0" role="link" aria-label="打开开心消消乐">
         <h2>开心消消乐</h2>
         <p>点击或拖动相邻方块，三连消除。节奏轻松，手感舒适。</p>
-        <button class="play" onclick="location.href='./match3/'">开始游戏</button>
+        <button class="play" type="button" data-href="./match3/">开始游戏</button>
       </div>
-      <div class="card">
+      <div class="card game-card" data-href="./sudoku/" tabindex="0" role="link" aria-label="打开数独">
         <h2>数独</h2>
         <p>经典 9×9 数独，点击数字填入，支持一键清除。</p>
-        <button class="play" onclick="location.href='./sudoku/'">开始游戏</button>
+        <button class="play" type="button" data-href="./sudoku/">开始游戏</button>
       </div>
     </div>
 
@@ -139,5 +128,7 @@
       建议在手机浏览器中打开，并“添加到主屏幕”获得更像 App 的体验。
     </div>
   </div>
+  <script src="assets/js/page-transition.min.js?v=20260430-loader1"></script>
+  <script src="assets/js/home.min.js?v=20260430-loader1"></script>
 </body>
 </html>
